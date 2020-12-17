@@ -5,9 +5,7 @@ use crate::token::Token;
 pub fn tokenize(path: &Path) -> Result<Vec<Token>, String> {
     let clang = clang::Clang::new()?;
     let index = clang::Index::new(&clang, true, false);
-    let tu = index
-        .parser(path)
-        .parse()?;
+    let tu = index.parser(path).parse()?;
     let mut vector = vec![];
     if let Some(range) = tu.get_entity().get_range() {
         for token in range.tokenize() {
