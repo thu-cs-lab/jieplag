@@ -2,11 +2,7 @@ use jieplag::token::Token;
 use log::*;
 use regex::Regex;
 use rkr_gst::Match;
-use std::{
-    collections::HashMap,
-    fs::{read_dir, FileType},
-    path::PathBuf,
-};
+use std::{collections::HashMap, fs::read_dir, path::PathBuf};
 use structopt::StructOpt;
 use walkdir::WalkDir;
 
