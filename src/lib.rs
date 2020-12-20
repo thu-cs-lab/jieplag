@@ -1,6 +1,7 @@
 pub mod env;
 pub mod lang;
 pub mod token;
+pub mod user;
 
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
