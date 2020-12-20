@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
                 CookieSession::private(secret.as_ref())
                     .secure(false)
                     .http_only(true)
-                    .max_age(3600),
+                    .max_age(604800),
             )
             .wrap(middleware::Logger::default())
             .service(web::scope("/api").service(login))
