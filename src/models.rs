@@ -1,5 +1,5 @@
 use crate::schema::users;
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, AsChangeset)]
 #[table_name = "users"]
 pub struct NewUser {
     pub user_name: String,

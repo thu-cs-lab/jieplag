@@ -10,6 +10,9 @@ struct Args {
 
     #[structopt(short, long)]
     password: String,
+
+    #[structopt(short, long)]
+    force: bool,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -24,8 +27,17 @@ fn main() -> anyhow::Result<()> {
         salt: Vec::from(salt),
         password: Vec::from(hash),
     };
-    diesel::insert_into(jieplag::schema::users::table)
-        .values(&new_user)
-        .execute(&conn)?;
+    if args.force {
+        diesel::insert_into(jieplag::schema::users::table)
+            .values(&new_user)
+            .on_conflict(jieplag::schema::users::user_name)
+            .do_update()
+            .set(&new_user)
+            .execute(&conn)?;
+    } else {
+        diesel::insert_into(jieplag::schema::users::table)
+            .values(&new_user)
+            .execute(&conn)?;
+    }
     Ok(())
 }
