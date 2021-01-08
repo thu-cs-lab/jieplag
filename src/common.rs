@@ -3,6 +3,14 @@ use log::*;
 use std::fmt::Display;
 use uuid::Uuid;
 
+#[derive(Copy, Clone)]
+pub struct LineMatch {
+    pub left_from: u32,
+    pub left_to: u32,
+    pub right_from: u32,
+    pub right_to: u32,
+}
+
 pub fn generate_uuid() -> String {
     let uuid = Uuid::new_v4();
     uuid.to_simple()
