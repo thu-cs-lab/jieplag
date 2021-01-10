@@ -28,3 +28,4 @@ serde = { version = "1.0.118", features = ["derive"] }
 structopt = "0.3.21"
 walkdir = "2.3.1"
 uuid = { version = "0.8.1", features = ["v4"] }
+adler32 = "1.2.0"
