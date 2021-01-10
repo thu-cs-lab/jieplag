@@ -5,6 +5,7 @@ use regex::Regex;
 use std::{
     collections::{HashMap, VecDeque},
     fs::{read_dir, File},
+    hash::{Hash, Hasher},
     io::Read,
     path::{Path, PathBuf},
 };
@@ -43,7 +44,7 @@ fn read_file_lines(s: &Path) -> anyhow::Result<Vec<String>> {
 
 #[derive(Clone, Copy)]
 pub struct Fingerprint {
-    pub hash: u32,
+    pub hash: u64,
     pub offset: usize,
 }
 
@@ -69,13 +70,16 @@ where
     let window_size = guarantee - noise + 1;
     let mut hashes = VecDeque::new();
     for _ in 0..window_size {
-        hashes.push_back(u32::MAX);
+        hashes.push_back(u64::MAX);
     }
 
     let mut min_hash_index = 0;
     let mut window_offset = 0;
     while let Some(e) = iter.next() {
-        let new_hash = hasher.hash();
+        // alder32 is not random enough!
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        hasher.hash().hash(&mut h);
+        let new_hash = h.finish();
 
         if new_hash < hashes[min_hash_index] {
             // a new minimum
@@ -135,7 +139,10 @@ where
 
     let mut window_offset = 0;
     while let Some(e) = iter.next() {
-        let new_hash = hasher.hash();
+        // alder32 is not random enough!
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        hasher.hash().hash(&mut h);
+        let new_hash = h.finish();
 
         res.push(Fingerprint {
             hash: new_hash,
@@ -239,7 +246,7 @@ fn main() -> anyhow::Result<()> {
         let template_fingerprint = all_fingerprint(template_token.iter().map(|t| t.kind), 40);
         let mut local_tokens = vec![];
         let mut local_fingerprints = vec![];
-        let mut index: HashMap<u32, Vec<(Fingerprint, usize)>> = HashMap::new();
+        let mut index: HashMap<u64, Vec<(Fingerprint, usize)>> = HashMap::new();
         for i in 0..keys.len() {
             let token = all_tokens[submission][keys[i]].clone();
             let fingerprint = fingerprint(token.iter().map(|t| t.kind), 40, 80);
@@ -266,7 +273,12 @@ fn main() -> anyhow::Result<()> {
         let mut m = vec![0; keys.len() * keys.len()];
         for hash in index.keys() {
             let v = &index[hash];
-            if v.len() > 50 {
+            if v.len() > 10 {
+                // too common, skip
+                continue;
+            }
+
+            if v.len() > 5 {
                 println!("Found {} entries:", v.len());
                 for (f, i) in v {
                     println!(
@@ -277,9 +289,6 @@ fn main() -> anyhow::Result<()> {
                         local_tokens[*i][f.offset].column,
                     );
                 }
-
-                // too common, skip
-                continue;
             }
             // add to matrix
             for i in 0..v.len() {
@@ -305,16 +314,12 @@ fn main() -> anyhow::Result<()> {
             let token_left = &local_tokens[left];
             let token_right = &local_tokens[right];
             let matches = **matches;
-            let ratio_left = matches as f32 / token_left.len() as f32;
-            let ratio_right = matches as f32 / token_right.len() as f32;
             // show info
             info!(
-                "Possible plagarism: {} and {}: {} matches, ratio {} {}",
+                "Possible plagarism: {} and {}: {} matches",
                 keys[left].display(),
                 keys[right].display(),
                 matches,
-                ratio_left,
-                ratio_right,
             );
         }
 
