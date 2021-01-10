@@ -1,11 +1,11 @@
 use adler32::RollingAdler32;
-use jieplag::{common::LineMatch, token::Token};
+use jieplag::token::Token;
 use log::*;
 use regex::Regex;
 use std::{
     collections::{HashMap, VecDeque},
     fs::{read_dir, File},
-    io::{Read, Write},
+    io::Read,
     path::{Path, PathBuf},
 };
 use structopt::StructOpt;
@@ -41,6 +41,7 @@ fn read_file_lines(s: &Path) -> anyhow::Result<Vec<String>> {
     Ok(s.lines().map(|l| String::from(l)).collect::<Vec<String>>())
 }
 
+#[derive(Clone, Copy)]
 pub struct Fingerprint {
     pub hash: u32,
     pub offset: usize,
@@ -74,10 +75,6 @@ where
     let mut min_hash_index = 0;
     let mut window_offset = 0;
     while let Some(e) = iter.next() {
-        // update rolling hash
-        hasher.remove(noise, items.pop_front().unwrap());
-        items.push_back(e);
-        hasher.update(e);
         let new_hash = hasher.hash();
 
         if new_hash < hashes[min_hash_index] {
@@ -94,7 +91,8 @@ where
             hashes.pop_front();
             hashes.push_back(new_hash);
             if min_hash_index == 0 {
-                for i in 0..window_size {
+                // rightmost minimum
+                for i in (0..window_size).rev() {
                     if hashes[i] < hashes[min_hash_index] {
                         min_hash_index = i;
                     }
@@ -108,6 +106,46 @@ where
             }
         }
 
+        // update rolling hash
+        hasher.remove(noise, items.pop_front().unwrap());
+        items.push_back(e);
+        hasher.update(e);
+        window_offset += 1;
+    }
+    res
+}
+
+fn all_fingerprint<I>(mut iter: I, noise: usize) -> Vec<Fingerprint>
+where
+    I: Iterator<Item = u8>,
+{
+    let mut res = vec![];
+    // initial rolling `noise`-gram hashes
+    let mut items = VecDeque::new();
+    let mut hasher = RollingAdler32::new();
+    for _ in 0..noise {
+        if let Some(e) = iter.next() {
+            items.push_back(e);
+            hasher.update(e);
+        } else {
+            // too short
+            return res;
+        }
+    }
+
+    let mut window_offset = 0;
+    while let Some(e) = iter.next() {
+        let new_hash = hasher.hash();
+
+        res.push(Fingerprint {
+            hash: new_hash,
+            offset: window_offset,
+        });
+
+        // update rolling hash
+        hasher.remove(noise, items.pop_front().unwrap());
+        items.push_back(e);
+        hasher.update(e);
         window_offset += 1;
     }
     res
@@ -134,6 +172,13 @@ fn main() -> anyhow::Result<()> {
         if include {
             match jieplag::lang::tokenize(&path) {
                 Ok(tokens) => {
+                    /*
+                    println!("{}:", path.display());
+                    for t in &tokens {
+                        print!("{}:{}:{:?} ", t.kind, t.line, t.spelling);
+                    }
+                    println!("");
+                    */
                     template_tokens.insert(relative_path.to_path_buf(), tokens);
                 }
                 Err(err) => {
@@ -182,7 +227,6 @@ fn main() -> anyhow::Result<()> {
     }
 
     info!("Tokenized {} files in source directory", all_tokens.len());
-    let mut num_match = 0;
     for submission in all_tokens.keys() {
         info!("Processing file {}", submission.display());
         let keys: Vec<&PathBuf> = all_tokens[submission].keys().collect();
@@ -192,16 +236,22 @@ fn main() -> anyhow::Result<()> {
         }
 
         let template_token = &template_tokens[submission];
-        let template_fingerprint = fingerprint(template_token.iter().map(|t| t.kind), 20, 40);
+        let template_fingerprint = all_fingerprint(template_token.iter().map(|t| t.kind), 40);
         let mut local_tokens = vec![];
         let mut local_fingerprints = vec![];
-        let mut index: HashMap<u32, Vec<usize>> = HashMap::new();
+        let mut index: HashMap<u32, Vec<(Fingerprint, usize)>> = HashMap::new();
         for i in 0..keys.len() {
             let token = all_tokens[submission][keys[i]].clone();
-            let fingerprint = fingerprint(token.iter().map(|t| t.kind), 20, 40);
-            // insert to index: fingerprint => id
+            let fingerprint = fingerprint(token.iter().map(|t| t.kind), 40, 80);
+            println!(
+                "{}: {} tokens, {} fingerprints",
+                keys[i].display(),
+                token.len(),
+                fingerprint.len()
+            );
+            // insert to index: fingerprint => f
             for f in &fingerprint {
-                index.entry(f.hash).or_default().push(i);
+                index.entry(f.hash).or_default().push((*f, i));
             }
             local_fingerprints.push(fingerprint);
             local_tokens.push(token);
@@ -213,33 +263,62 @@ fn main() -> anyhow::Result<()> {
         }
 
         // create two dimensional matrix
-        let mut m = vec![vec![0; keys.len()]; keys.len()];
+        let mut m = vec![0; keys.len() * keys.len()];
         for hash in index.keys() {
             let v = &index[hash];
+            if v.len() > 50 {
+                println!("Found {} entries:", v.len());
+                for (f, i) in v {
+                    println!(
+                        "{} offset {} L{} C{}",
+                        keys[*i].display(),
+                        f.offset,
+                        local_tokens[*i][f.offset].line,
+                        local_tokens[*i][f.offset].column,
+                    );
+                }
+
+                // too common, skip
+                continue;
+            }
             // add to matrix
             for i in 0..v.len() {
                 for j in (i + 1)..v.len() {
-                    m[v[i]][v[j]] += 1;
-                    m[v[j]][v[i]] += 1;
+                    if v[i].1 == v[j].1 {
+                        continue;
+                    }
+                    m[v[i].1 * keys.len() + v[j].1] += 1;
+                    m[v[j].1 * keys.len() + v[i].1] += 1;
                 }
             }
         }
 
-        // find large elements
-        for left in 0..keys.len() {
-            for right in (left + 1)..keys.len() {
-                let val = m[left][right];
-                if val > 1000 {
-                    // show info
-                    info!(
-                        "Possible plagarism: {} and {}: {} matches",
-                        keys[left].display(),
-                        keys[right].display(),
-                        val
-                    );
-                }
+        let mut sorted_m: Vec<_> = m.iter().enumerate().collect();
+        sorted_m.sort_by_key(|(i, val)| **val);
+        for (i, matches) in sorted_m.iter().rev().take(40) {
+            let left = i % keys.len();
+            let right = i / keys.len();
+            if left < right {
+                // skip duplicatie
+                continue;
             }
+            let token_left = &local_tokens[left];
+            let token_right = &local_tokens[right];
+            let matches = **matches;
+            let ratio_left = matches as f32 / token_left.len() as f32;
+            let ratio_right = matches as f32 / token_right.len() as f32;
+            // show info
+            info!(
+                "Possible plagarism: {} and {}: {} matches, ratio {} {}",
+                keys[left].display(),
+                keys[right].display(),
+                matches,
+                ratio_left,
+                ratio_right,
+            );
         }
+
+        // find large elements
 
         /*
         for left in 0..keys.len() {
