@@ -1,16 +1,14 @@
-#[macro_use]
-extern crate diesel_migrations;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{cookie::Key, middleware, web, App, HttpServer};
 use diesel::r2d2::{ConnectionManager, Pool};
-use diesel_migrations::embed_migrations;
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
 use env_logger;
 use jieplag::{env::ENV, session::login, DbConnection};
 use log::*;
 use ring::digest;
 
-embed_migrations!();
+pub const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!();
 
 #[actix_rt::main]
 async fn main() -> anyhow::Result<()> {
@@ -21,8 +19,8 @@ async fn main() -> anyhow::Result<()> {
     let url = ENV.database_url.clone();
     let manager = ConnectionManager::<DbConnection>::new(url);
     let pool = Pool::builder().build(manager)?;
-    let conn = pool.get()?;
-    embedded_migrations::run_with_output(&conn, &mut std::io::stdout())?;
+    let mut conn = pool.get()?;
+    conn.run_pending_migrations(MIGRATIONS).unwrap();
 
     info!("Setup Server");
     let secret = ENV.cookie_secret.clone();

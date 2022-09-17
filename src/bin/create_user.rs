@@ -19,7 +19,7 @@ fn main() -> anyhow::Result<()> {
     let args = Args::from_args();
     dotenv().ok();
     let url = jieplag::env::ENV.database_url.clone();
-    let conn = jieplag::DbConnection::establish(&url)?;
+    let mut conn = jieplag::DbConnection::establish(&url)?;
 
     let (salt, hash) = jieplag::session::hash(&args.password)?;
     let new_user = jieplag::models::NewUser {
@@ -33,11 +33,11 @@ fn main() -> anyhow::Result<()> {
             .on_conflict(jieplag::schema::users::user_name)
             .do_update()
             .set(&new_user)
-            .execute(&conn)?;
+            .execute(&mut conn)?;
     } else {
         diesel::insert_into(jieplag::schema::users::table)
             .values(&new_user)
-            .execute(&conn)?;
+            .execute(&mut conn)?;
     }
     Ok(())
 }

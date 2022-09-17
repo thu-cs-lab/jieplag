@@ -1,6 +1,7 @@
 use crate::schema::users;
+
 #[derive(Debug, Insertable, AsChangeset)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct NewUser {
     pub user_name: String,
     pub salt: Vec<u8>,

@@ -66,11 +66,11 @@ pub async fn login(
     pool: web::Data<DbPool>,
     body: web::Json<LoginRequest>,
 ) -> Result<HttpResponse> {
-    let conn = pool.get().map_err(err)?;
+    let mut conn = pool.get().map_err(err)?;
     use crate::schema::users::dsl;
     if let Ok(user) = dsl::users
         .filter(dsl::user_name.eq(&body.user_name))
-        .first::<User>(&conn)
+        .first::<User>(&mut conn)
     {
         if verify(&user.salt, &body.password, &user.password) {
             session.insert("id", user.id)?;
