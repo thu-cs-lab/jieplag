@@ -29,3 +29,4 @@ serde = { version = "1.0.144", features = ["derive"] }
 structopt = "0.3.26"
 walkdir = "2.3.2"
 uuid = { version = "1.1.2", features = ["v4"] }
+html-escape = "0.2.11"

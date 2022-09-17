@@ -1,7 +1,7 @@
 use rkr_gst::Match;
 use std::{
     fs::File,
-    io::Read,
+    io::{Read, Write},
     path::{Path, PathBuf},
 };
 use structopt::StructOpt;
@@ -119,11 +119,55 @@ fn main() -> anyhow::Result<()> {
         filter(&right_template_matches, false);
     }
 
+    let mut file_left = File::create("match-left.html")?;
+    writeln!(file_left, "<html><head></head><body><pre>")?;
+    let mut file_right = File::create("match-right.html")?;
+    writeln!(file_right, "<html><head></head><body><pre>")?;
+
+    let mut last_line_left = 0;
+    let mut last_line_right = 0;
+    let colors = ["#FF0000", "#00FF00", "#0000FF"];
     for (idx, m) in matches.iter().enumerate() {
         let line_from_left = token_left[m.pattern_index].line as usize - 1;
         let line_to_left = token_left[m.pattern_index + m.length - 1].line as usize - 1;
         let line_from_right = token_right[m.text_index].line as usize - 1;
         let line_to_right = token_right[m.text_index + m.length - 1].line as usize - 1;
+
+        if last_line_left < line_from_left {
+            writeln!(
+                file_left,
+                "{}",
+                html_escape::encode_text(
+                    &lines_left[last_line_left..=(line_from_left - 1)].join("\n")
+                )
+            )?;
+            last_line_left = line_to_left + 1;
+        }
+        writeln!(file_left, "<font color=\"{}\">", colors[idx % 3])?;
+        writeln!(
+            file_left,
+            "{}",
+            html_escape::encode_text(&lines_left[line_from_left..=line_to_left].join("\n"))
+        )?;
+        writeln!(file_left, "</font>")?;
+
+        if last_line_right < line_from_right {
+            writeln!(
+                file_right,
+                "{}",
+                html_escape::encode_text(
+                    &lines_right[last_line_right..=(line_from_right - 1)].join("\n")
+                )
+            )?;
+            last_line_right = line_to_right + 1;
+        }
+        writeln!(file_right, "<font color=\"{}\">", colors[idx % 3])?;
+        writeln!(
+            file_right,
+            "{}",
+            html_escape::encode_text(&lines_right[line_from_right..=line_to_right].join("\n"))
+        )?;
+        writeln!(file_right, "</font>")?;
 
         println!("Match #{}:", idx + 1);
         println!("Left:");
@@ -134,6 +178,8 @@ fn main() -> anyhow::Result<()> {
             lines_right[line_from_right..=line_to_right].join("\n")
         );
     }
+
+    writeln!(file_left, "</pre></body></html>")?;
 
     Ok(())
 }
