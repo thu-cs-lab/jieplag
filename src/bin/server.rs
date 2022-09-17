@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate diesel_migrations;
-use actix_session::CookieSession;
-use actix_web::{middleware, web, App, HttpServer};
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::{cookie::Key, middleware, web, App, HttpServer};
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel_migrations::embed_migrations;
 use dotenv::dotenv;
@@ -29,13 +29,16 @@ async fn main() -> anyhow::Result<()> {
     let secret = digest::digest(&digest::SHA512, secret.as_bytes());
     HttpServer::new(move || {
         App::new()
-            .data(pool.clone())
+            .app_data(web::Data::new(pool.clone()))
             .wrap(actix_cors::Cors::default().supports_credentials())
             .wrap(
-                CookieSession::private(secret.as_ref())
-                    .secure(false)
-                    .http_only(true)
-                    .max_age(604800),
+                SessionMiddleware::builder(
+                    CookieSessionStore::default(),
+                    Key::from(secret.as_ref()),
+                )
+                .cookie_secure(true)
+                .cookie_http_only(true)
+                .build(),
             )
             .wrap(middleware::Logger::default())
             .service(web::scope("/api").service(login))

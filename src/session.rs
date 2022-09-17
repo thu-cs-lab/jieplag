@@ -73,8 +73,8 @@ pub async fn login(
         .first::<User>(&conn)
     {
         if verify(&user.salt, &body.password, &user.password) {
-            session.set("id", user.id)?;
-            session.set("user_name", &user.user_name)?;
+            session.insert("id", user.id)?;
+            session.insert("user_name", &user.user_name)?;
             info!("User {} logged in", user.user_name);
             return Ok(HttpResponse::Ok().json(true));
         }

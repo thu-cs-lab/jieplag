@@ -1,9 +1,9 @@
-use actix_http::{error::ErrorInternalServerError, Error};
+use crate::token::Token;
+use actix_web::{error::ErrorInternalServerError, Error};
+use anyhow::anyhow;
 use log::*;
 use std::fmt::Display;
 use uuid::Uuid;
-
-use crate::token::Token;
 
 #[derive(Copy, Clone)]
 pub struct LineMatch {
@@ -47,7 +47,7 @@ pub fn find_matches(left: &[Token], right: &[Token]) -> Vec<LineMatch> {
 
 pub fn generate_uuid() -> String {
     let uuid = Uuid::new_v4();
-    uuid.to_simple()
+    uuid.simple()
         .encode_lower(&mut Uuid::encode_buffer())
         .to_owned()
 }
@@ -57,8 +57,8 @@ pub fn err<T: Display>(err: T) -> Error {
     let error_token = generate_uuid();
     let location = std::panic::Location::caller();
     error!("Error {} at {}: {}", error_token, location, err);
-    ErrorInternalServerError(format!(
+    ErrorInternalServerError(anyhow!(format!(
         "Please contact admin with error token {}",
         error_token
-    ))
+    )))
 }
