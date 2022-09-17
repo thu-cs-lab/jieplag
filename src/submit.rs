@@ -11,15 +11,15 @@ use actix_session::Session;
 use actix_web::{post, web, HttpResponse, Result};
 use diesel::prelude::*;
 use log::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Submission {
     pub name: String,
     pub code: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct SubmitRequest {
     pub login: Option<LoginRequest>,
     pub language: Language,
@@ -134,22 +134,28 @@ pub async fn submit(
 ) -> Result<HttpResponse> {
     let mut conn = pool.get().map_err(err)?;
     use crate::schema::users::dsl;
+    let user_id;
     if let Some(login) = &body.login {
         if let Ok(user) = dsl::users
             .filter(dsl::user_name.eq(&login.user_name))
             .first::<User>(&mut conn)
         {
-            if !verify(&user.salt, &login.password, &user.password) {
+            if verify(&user.salt, &login.password, &user.password) {
+                user_id = user.id;
+            } else {
                 return Ok(HttpResponse::Ok().json(false));
             }
         } else {
             return Ok(HttpResponse::Ok().json(false));
         }
     } else {
-        if let Some(user_id) = session.get::<i32>("id")? {
-            work((*body).clone(), user_id).await.map_err(err)?;
+        if let Some(id) = session.get::<i32>("id")? {
+            user_id = id;
+        } else {
             return Ok(HttpResponse::Ok().json(false));
         }
     }
-    Ok(HttpResponse::Ok().json(false))
+    info!("Got submission from {}", user_id);
+    work((*body).clone(), user_id).await.map_err(err)?;
+    return Ok(HttpResponse::Ok().json(true));
 }

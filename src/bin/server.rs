@@ -1,10 +1,15 @@
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::{cookie::Key, middleware, web, App, HttpServer};
+use actix_web::{
+    cookie::Key,
+    middleware,
+    web::{self, JsonConfig},
+    App, HttpServer,
+};
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
 use env_logger;
-use jieplag::{env::ENV, session::login, DbConnection};
+use jieplag::{env::ENV, session::login, submit::submit, DbConnection};
 use log::*;
 use ring::digest;
 
@@ -28,6 +33,9 @@ async fn main() -> anyhow::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(
+                JsonConfig::default().limit(32 * 1024 * 1024 * 1024),
+            )) // Enlarge body size limit
             .wrap(actix_cors::Cors::default().supports_credentials())
             .wrap(
                 SessionMiddleware::builder(
@@ -39,7 +47,7 @@ async fn main() -> anyhow::Result<()> {
                 .build(),
             )
             .wrap(middleware::Logger::default())
-            .service(web::scope("/api").service(login))
+            .service(web::scope("/api").service(login).service(submit))
     })
     .bind("127.0.0.1:8765")?
     .run()

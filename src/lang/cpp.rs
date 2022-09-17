@@ -3,10 +3,9 @@ use anyhow::anyhow;
 use clang::token::TokenKind;
 use std::{
     hash::{Hash, Hasher},
-    io::Write,
     path::{Path, PathBuf},
 };
-use tempfile::NamedTempFile;
+use tempfile::tempdir;
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
     let clang = clang::Clang::new().map_err(|err| anyhow!("{}", err))?;
@@ -44,7 +43,8 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
 }
 
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
-    let mut temp = NamedTempFile::new()?;
-    write!(temp, "{}", content)?;
-    tokenize(&temp.into_temp_path())
+    let dir = tempdir()?;
+    let path = dir.path().join("code.cpp");
+    std::fs::write(&path, content)?;
+    tokenize(&path)
 }

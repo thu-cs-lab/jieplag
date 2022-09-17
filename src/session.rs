@@ -8,7 +8,7 @@ use ring::{
     digest, pbkdf2,
     rand::{self, SecureRandom},
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::num::NonZeroU32;
 
 const CREDENTIAL_LEN: usize = digest::SHA512_OUTPUT_LEN;
@@ -54,7 +54,7 @@ mod tests {
     }
 }
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LoginRequest {
     pub user_name: String,
     pub password: String,
