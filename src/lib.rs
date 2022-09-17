@@ -12,6 +12,7 @@ pub mod schema;
 pub mod session;
 pub mod submit;
 pub mod token;
+pub mod work;
 
 pub type DbConnection = PgConnection;
 type DbPool = Pool<ConnectionManager<DbConnection>>;

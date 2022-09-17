@@ -1,15 +1,17 @@
-use std::collections::HashMap;
-
 use crate::{
-    common::{all_fingerprint, err, fingerprint, Fingerprint},
-    lang::{tokenize_str, Language},
-    models::User,
+    common::{err, generate_uuid},
+    lang::Language,
+    models::{NewBlock, NewJob, NewMatch, NewSubmission, User},
     session::{verify, LoginRequest},
-    DbPool,
+    work::work_blocking,
+    DbConnection, DbPool,
 };
 use actix_session::Session;
 use actix_web::{post, web, HttpResponse, Result};
-use diesel::prelude::*;
+use diesel::{
+    prelude::*,
+    r2d2::{ConnectionManager, PooledConnection},
+};
 use log::*;
 use serde::{Deserialize, Serialize};
 
@@ -27,102 +29,76 @@ pub struct SubmitRequest {
     pub submissions: Vec<Submission>,
 }
 
-fn work_blocking(req: SubmitRequest) -> anyhow::Result<()> {
-    // tokenize template
-    let template_tokens = if let Some(template) = &req.template {
-        tokenize_str(template, req.language)?
-    } else {
-        vec![]
-    };
+async fn work(
+    mut conn: PooledConnection<ConnectionManager<DbConnection>>,
+    req: SubmitRequest,
+    user_id: i32,
+) -> anyhow::Result<()> {
+    let work_req = req.clone();
+    let work = actix_web::web::block(move || work_blocking(work_req)).await??;
+    conn.transaction::<_, diesel::result::Error, _>(move |conn| {
+        // create new job
+        let new_job = NewJob {
+            creator_user_id: user_id,
+            slug: generate_uuid(),
+        };
+        let job_ids: Vec<i32> = diesel::insert_into(crate::schema::jobs::table)
+            .values(new_job)
+            .returning(crate::schema::jobs::dsl::id)
+            .get_results(conn)?;
+        let job_id = job_ids[0];
 
-    // tokenize sources
-    let mut all_tokens = vec![];
-    for submission in &req.submissions {
-        all_tokens.push(tokenize_str(&submission.code, req.language)?);
-    }
-    info!("Tokenized {} files in submission", all_tokens.len());
+        // insert submissions
+        let new_submissions: Vec<NewSubmission> = req
+            .submissions
+            .iter()
+            .map(|s| NewSubmission {
+                job_id,
+                name: s.name.clone(),
+                code: s.code.clone(),
+            })
+            .collect();
+        let submission_ids: Vec<i32> = diesel::insert_into(crate::schema::submissions::table)
+            .values(new_submissions)
+            .returning(crate::schema::submissions::dsl::id)
+            .get_results(conn)?;
 
-    let template_fingerprint = all_fingerprint(template_tokens.iter().map(|t| t.kind), 40);
+        // insert matches
+        let new_matches: Vec<NewMatch> = work
+            .matches
+            .iter()
+            .map(|m| NewMatch {
+                job_id,
+                left_submission_id: submission_ids[m.left_submission_idx],
+                left_match_rate: m.left_match_rate,
+                right_submission_id: submission_ids[m.right_submission_idx],
+                right_match_rate: m.right_match_rate,
+                lines_matched: m.lines_matched as i32,
+            })
+            .collect();
+        let match_ids: Vec<i32> = diesel::insert_into(crate::schema::matches::table)
+            .values(new_matches)
+            .returning(crate::schema::matches::dsl::id)
+            .get_results(conn)?;
 
-    let mut local_tokens = vec![];
-    let mut local_fingerprints = vec![];
-    let mut index: HashMap<u64, Vec<(Fingerprint, usize)>> = HashMap::new();
-    for (i, token) in all_tokens.iter().enumerate() {
-        let fingerprint = fingerprint(token.iter().map(|t| t.kind), 40, 80);
-        info!(
-            "{}: {} tokens, {} fingerprints",
-            req.submissions[i].name,
-            token.len(),
-            fingerprint.len()
-        );
-        // insert to index: fingerprint => f
-        for f in &fingerprint {
-            index.entry(f.hash).or_default().push((*f, i));
+        for (match_id, m) in match_ids.iter().zip(work.matches.iter()) {
+            // insert blocks
+            let new_blocks: Vec<NewBlock> = m
+                .blocks
+                .iter()
+                .map(|b| NewBlock {
+                    match_id: *match_id,
+                    left_line_from: b.left_line_from as i32,
+                    right_line_from: b.right_line_from as i32,
+                    length: b.length as i32,
+                })
+                .collect();
+            diesel::insert_into(crate::schema::blocks::table)
+                .values(new_blocks)
+                .execute(conn)?;
         }
-        local_fingerprints.push(fingerprint);
-        local_tokens.push(token);
-    }
-
-    // exclude fingerprints in template
-    for f in &template_fingerprint {
-        index.remove(&f.hash);
-    }
-
-    // create two dimensional matrix
-    let mut m = vec![0; all_tokens.len() * all_tokens.len()];
-    for hash in index.keys() {
-        let v = &index[hash];
-        if v.len() > 10 {
-            // too common, skip
-            continue;
-        }
-
-        if v.len() > 5 {
-            println!("Found {} entries:", v.len());
-            for (f, i) in v {
-                println!(
-                    "{} offset {} L{} C{}",
-                    req.submissions[*i].name,
-                    f.offset,
-                    local_tokens[*i][f.offset].line,
-                    local_tokens[*i][f.offset].column,
-                );
-            }
-        }
-        // add to matrix
-        for i in 0..v.len() {
-            for j in (i + 1)..v.len() {
-                if v[i].1 == v[j].1 {
-                    continue;
-                }
-                m[v[i].1 * all_tokens.len() + v[j].1] += 1;
-                m[v[j].1 * all_tokens.len() + v[i].1] += 1;
-            }
-        }
-    }
-
-    let mut sorted_m: Vec<_> = m.iter().enumerate().collect();
-    sorted_m.sort_by_key(|(_, val)| **val);
-    for (i, matches) in sorted_m.iter().rev().take(40) {
-        let left = i % all_tokens.len();
-        let right = i / all_tokens.len();
-        if left < right {
-            // skip duplicatie
-            continue;
-        }
-        let matches = **matches;
-        // show info
-        info!(
-            "Possible plagarism: {} and {}: {} matches",
-            req.submissions[left].name, req.submissions[right].name, matches,
-        );
-    }
-
-    Ok(())
-}
-
-async fn work(req: SubmitRequest, user_id: i32) -> anyhow::Result<()> {
-    actix_web::web::block(|| work_blocking(req)).await??;
+        Ok(())
+    })?;
     Ok(())
 }
 
@@ -156,6 +132,6 @@ pub async fn submit(
         }
     }
     info!("Got submission from {}", user_id);
-    work((*body).clone(), user_id).await.map_err(err)?;
+    work(conn, (*body).clone(), user_id).await.map_err(err)?;
     return Ok(HttpResponse::Ok().json(true));
 }
