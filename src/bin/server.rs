@@ -9,7 +9,13 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
 use env_logger;
-use jieplag::{env::ENV, render::match_inner, session::login, submit::submit, DbConnection};
+use jieplag::{
+    env::ENV,
+    render::{match_inner, match_two_columns},
+    session::login,
+    submit::submit,
+    DbConnection,
+};
 use log::*;
 use ring::digest;
 
@@ -49,6 +55,7 @@ async fn main() -> anyhow::Result<()> {
             .wrap(middleware::Logger::default())
             .service(web::scope("/api").service(login).service(submit))
             .service(match_inner)
+            .service(match_two_columns)
     })
     .bind("127.0.0.1:8765")?
     .run()

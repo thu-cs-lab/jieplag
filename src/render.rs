@@ -5,7 +5,6 @@ use crate::{
 };
 use actix_web::{get, http::header, web, HttpResponse, Result};
 use diesel::prelude::*;
-use log::info;
 
 #[get("/results/{slug}/{match_id}/{left_right}")]
 pub async fn match_inner(
@@ -41,7 +40,7 @@ pub async fn match_inner(
                 .first::<Submission>(&mut conn)
             {
                 let lines: Vec<&str> = s.code.lines().collect();
-                if let Ok(blocks) = crate::schema::blocks::dsl::blocks
+                if let Ok(mut blocks) = crate::schema::blocks::dsl::blocks
                     .filter(crate::schema::blocks::dsl::match_id.eq(m.id))
                     .load::<Block>(&mut conn)
                 {
@@ -49,9 +48,17 @@ pub async fn match_inner(
                         "<html><head><meta charset=\"UTF-8\"></head><body><pre>".to_string();
                     let mut last_line = 0;
                     let colors = ["#FF0000", "#00FF00", "#0000FF"];
-                    info!("{:?}", lines.len());
+
+                    // sort by line_from
+                    blocks.sort_by_key(|b| {
+                        if is_left {
+                            b.left_line_from
+                        } else {
+                            b.right_line_from
+                        }
+                    });
+
                     for (idx, b) in blocks.iter().enumerate() {
-                        info!("{:?}", b);
                         let line_from = if is_left {
                             b.left_line_from
                         } else {
@@ -68,7 +75,8 @@ pub async fn match_inner(
                                 &lines[last_line..=(line_from - 1)].join("\n"),
                             )
                             .to_string();
-                            last_line = line_from + 1;
+                            res += "\n";
+                            last_line = line_to + 1;
                         }
 
                         res += &format!("<font color=\"{}\">", colors[idx % 3]);
@@ -76,7 +84,15 @@ pub async fn match_inner(
                             "{}",
                             html_escape::encode_text(&lines[line_from..=line_to].join("\n"))
                         );
+                        res += "\n";
                         res += "</font>";
+                    }
+
+                    // the rest
+                    if last_line < lines.len() {
+                        res +=
+                            &html_escape::encode_text(&lines[last_line..].join("\n")).to_string();
+                        res += "\n";
                     }
 
                     res += "</pre></body></html>";
@@ -88,4 +104,26 @@ pub async fn match_inner(
         }
     }
     Ok(HttpResponse::NotFound().json(false))
+}
+
+#[get("/results/{slug}/{match_id}")]
+pub async fn match_two_columns(path: web::Path<(String, i64)>) -> Result<HttpResponse> {
+    let (_slug, match_id) = path.into_inner();
+
+    let res = format!(
+        r#"
+<html>
+	<head>
+	</head>
+	<frameset cols="50%,50%">
+		<frame src="./{match_id}/left"></frame>
+		<frame src="./{match_id}/right"></frame>
+	</frameset>
+</html>
+    "#
+    );
+
+    return Ok(HttpResponse::Ok()
+        .append_header(header::ContentType::html())
+        .body(res));
 }
