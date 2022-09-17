@@ -15,17 +15,20 @@ pub fn tokenize(path: &Path) -> Result<Vec<Token>, String> {
     if let Some(range) = tu.get_entity().get_range() {
         for token in range.tokenize() {
             let kind = token.get_kind();
-            let mut kind_u8 = kind as u8;
-            // only four kind of tokens, too small
-            let mut hasher = std::collections::hash_map::DefaultHasher::new();
-            if token.get_kind() == TokenKind::Comment {
-                continue;
-            } else if token.get_kind() == TokenKind::Punctuation
-                || token.get_kind() == TokenKind::Keyword
-            {
-                token.get_spelling().hash(&mut hasher);
-                kind_u8 ^= hasher.finish() as u8;
-            }
+            let kind_u8 = match kind {
+                TokenKind::Comment => continue,
+                TokenKind::Identifier => 0x0,
+                TokenKind::Literal => 0x1,
+                TokenKind::Keyword | TokenKind::Punctuation => {
+                    // Keyword or Punctuation
+                    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+                    token.get_spelling().hash(&mut hasher);
+                    let hash = hasher.finish() as u8 % 127;
+                    // Keyword: [2, 128]
+                    // Punctuation: [129, 255]
+                    hash + if kind == TokenKind::Keyword { 2 } else { 129 }
+                }
+            };
 
             vector.push(Token {
                 path: PathBuf::from(path),
