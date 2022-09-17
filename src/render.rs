@@ -40,7 +40,7 @@ pub async fn match_inner(
                 .first::<Submission>(&mut conn)
             {
                 let lines: Vec<&str> = s.code.lines().collect();
-                if let Ok(mut blocks) = crate::schema::blocks::dsl::blocks
+                if let Ok(blocks) = crate::schema::blocks::dsl::blocks
                     .filter(crate::schema::blocks::dsl::match_id.eq(m.id))
                     .load::<Block>(&mut conn)
                 {
@@ -49,16 +49,20 @@ pub async fn match_inner(
                     let mut last_line = 0;
                     let colors = ["#FF0000", "#00FF00", "#0000FF"];
 
+                    // add index to blocks before sorting
+                    // so that index remains sync-ed in left & right panels
+                    let mut blocks: Vec<(usize, Block)> = blocks.into_iter().enumerate().collect();
+
                     // sort by line_from
                     blocks.sort_by_key(|b| {
                         if is_left {
-                            b.left_line_from
+                            b.1.left_line_from
                         } else {
-                            b.right_line_from
+                            b.1.right_line_from
                         }
                     });
 
-                    for (idx, b) in blocks.iter().enumerate() {
+                    for (idx, b) in blocks.iter() {
                         let line_from = if is_left {
                             b.left_line_from
                         } else {
@@ -123,9 +127,7 @@ pub async fn match_inner(
 }
 
 #[get("/results/{slug}/{match_id}/")]
-pub async fn match_two_columns(path: web::Path<(String, i64)>) -> Result<HttpResponse> {
-    let (_slug, match_id) = path.into_inner();
-
+pub async fn match_two_columns(_path: web::Path<(String, i64)>) -> Result<HttpResponse> {
     let res = format!(
         r#"
 <html>

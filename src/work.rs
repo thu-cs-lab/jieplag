@@ -133,9 +133,9 @@ pub fn compute_matching_blocks(
             right_line_to: line_to_right,
         });
 
-        info!("Match #{}:", idx + 1);
-        info!("Left L{}-L{}", line_from_left, line_to_left);
-        info!("Right L{}-L{}", line_from_right, line_to_right);
+        debug!("Match #{}:", idx + 1);
+        debug!("Left L{}-L{}", line_from_left, line_to_left);
+        debug!("Right L{}-L{}", line_from_right, line_to_right);
     }
     Ok(res)
 }
@@ -227,8 +227,8 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
             continue;
         }
         let num_matches = **num_matches;
-        // show info
-        info!(
+        // show debug message
+        debug!(
             "Possible plagarism: {} and {}: {} matches",
             req.submissions[left].name, req.submissions[right].name, num_matches,
         );
