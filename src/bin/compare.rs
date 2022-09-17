@@ -40,58 +40,86 @@ fn main() -> anyhow::Result<()> {
     let token_kind_right: Vec<u8> = token_right.iter().map(|t| t.kind).collect();
     let lines_right = read_file_lines(&opts.right)?;
 
-    let token_template = opts
-        .template
-        .as_ref()
-        .map(|p| jieplag::lang::tokenize(&p).unwrap());
-    let token_kind_template: Option<Vec<u8>> =
-        token_template.map(|t| t.iter().map(|t| t.kind).collect());
-
     let initial_search_length = 40;
     let minimum_match_length = 20;
-    let matches = rkr_gst::run(
+    let mut matches = rkr_gst::run(
         &token_kind_left,
         &token_kind_right,
         initial_search_length,
         minimum_match_length,
     );
 
-    let left_template_matches = token_kind_template.as_ref().map(|t| {
-        rkr_gst::run(
+    if let Some(template) = &opts.template {
+        let token_template = jieplag::lang::tokenize(&template).unwrap();
+        let token_kind_template: Vec<u8> = token_template.iter().map(|t| t.kind).collect();
+
+        let left_template_matches = rkr_gst::run(
             &token_kind_left,
-            t,
+            &token_kind_template,
             initial_search_length,
             minimum_match_length,
-        )
-    });
-    let right_template_matches = token_kind_template.as_ref().map(|t| {
-        rkr_gst::run(
-            &token_kind_left,
-            t,
+        );
+        let right_template_matches = rkr_gst::run(
+            &token_kind_right,
+            &token_kind_template,
             initial_search_length,
             minimum_match_length,
-        )
-    });
+        );
+
+        // filter covered parts
+        let mut filter = |template_matches: &Vec<Match>, left: bool| {
+            for mmm in template_matches {
+                let mmm_from = mmm.pattern_index;
+                let mmm_to = mmm.pattern_index + mmm.length - 1;
+
+                let mut new_matches = vec![];
+                for m in matches.iter() {
+                    let mut m = m.clone();
+                    let m_from = if left { m.pattern_index } else { m.text_index };
+                    let m_to = m_from + m.length - 1;
+
+                    if mmm_from <= m_from && m_to <= mmm_to {
+                        // fully covered
+                        continue;
+                    } else if mmm_from <= m_from && m_from <= mmm_to {
+                        // move head
+                        let diff = mmm_to - m_from + 1;
+                        m.pattern_index += diff;
+                        m.text_index += diff;
+                        m.length -= diff;
+                        new_matches.push(m);
+                    } else if mmm_from <= m_to && m_to <= mmm_to {
+                        // move tail
+                        let diff = m_to - mmm_from + 1;
+                        m.length -= diff;
+                        new_matches.push(m);
+                    } else if m_from <= mmm_from && mmm_to <= m_to {
+                        // split into two
+                        new_matches.push(Match {
+                            pattern_index: m.pattern_index,
+                            text_index: m.text_index,
+                            length: mmm_from - m_from,
+                        });
+
+                        let diff = mmm_to - m_from + 1;
+                        new_matches.push(Match {
+                            pattern_index: m.pattern_index + diff,
+                            text_index: m.text_index + diff,
+                            length: m.length - diff,
+                        });
+                    } else {
+                        // unchanged
+                        new_matches.push(m);
+                    }
+                }
+                matches = new_matches;
+            }
+        };
+        filter(&left_template_matches, true);
+        filter(&right_template_matches, false);
+    }
 
     for (idx, m) in matches.iter().enumerate() {
-        // skip if covered
-        if let Some(true) = left_template_matches.as_ref().map(|mm| {
-            mm.iter().any(|mmm: &Match| {
-                mmm.pattern_index <= m.pattern_index + m.length - 1
-                    && mmm.pattern_index + mmm.length - 1 >= m.pattern_index
-            })
-        }) {
-            continue;
-        }
-        if let Some(true) = right_template_matches.as_ref().map(|mm| {
-            mm.iter().any(|mmm: &Match| {
-                mmm.pattern_index <= m.text_index + m.length - 1
-                    && mmm.pattern_index + mmm.length - 1 >= m.text_index
-            })
-        }) {
-            continue;
-        }
-
         let line_from_left = token_left[m.pattern_index].line as usize - 1;
         let line_to_left = token_left[m.pattern_index + m.length - 1].line as usize - 1;
         let line_from_right = token_right[m.text_index].line as usize - 1;
