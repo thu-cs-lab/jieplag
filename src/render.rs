@@ -64,6 +64,14 @@ pub async fn match_inner(
                         } else {
                             b.right_line_from
                         } as usize;
+
+                        let opposite_line_from = if is_left {
+                            b.right_line_from
+                        } else {
+                            b.left_line_from
+                        } as usize;
+                        let opposite_side = if is_left { "right" } else { "left" };
+
                         let line_to = if is_left {
                             b.left_line_to
                         } else {
@@ -79,7 +87,15 @@ pub async fn match_inner(
                             last_line = line_to + 1;
                         }
 
+                        // add link to jump to opposite side
+                        res += &format!("<a name=\"{}\">", line_from);
                         res += &format!("<font color=\"{}\">", colors[idx % 3]);
+                        res += &format!(
+                            "<a href=\"{}#{}\" target=\"{}\">",
+                            opposite_side, opposite_line_from, opposite_side
+                        );
+                        res += &format!("<img src=\"http://moss.stanford.edu/bitmaps/tm_3_2.gif\" alt=\"other\" border=\"0\" align=\"left\"></a>");
+                        res += "\n";
                         res += &format!(
                             "{}",
                             html_escape::encode_text(&lines[line_from..=line_to].join("\n"))
@@ -106,7 +122,7 @@ pub async fn match_inner(
     Ok(HttpResponse::NotFound().json(false))
 }
 
-#[get("/results/{slug}/{match_id}")]
+#[get("/results/{slug}/{match_id}/")]
 pub async fn match_two_columns(path: web::Path<(String, i64)>) -> Result<HttpResponse> {
     let (_slug, match_id) = path.into_inner();
 
@@ -116,8 +132,8 @@ pub async fn match_two_columns(path: web::Path<(String, i64)>) -> Result<HttpRes
 	<head>
 	</head>
 	<frameset cols="50%,50%">
-		<frame src="./{match_id}/left"></frame>
-		<frame src="./{match_id}/right"></frame>
+		<frame src="./left" name="left"></frame>
+		<frame src="./right" name="right"></frame>
 	</frameset>
 </html>
     "#
