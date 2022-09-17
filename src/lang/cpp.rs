@@ -1,14 +1,15 @@
+use crate::token::Token;
+use anyhow::anyhow;
+use clang::token::TokenKind;
 use std::{
     hash::{Hash, Hasher},
+    io::Write,
     path::{Path, PathBuf},
 };
+use tempfile::NamedTempFile;
 
-use clang::token::TokenKind;
-
-use crate::token::Token;
-
-pub fn tokenize(path: &Path) -> Result<Vec<Token>, String> {
-    let clang = clang::Clang::new()?;
+pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
+    let clang = clang::Clang::new().map_err(|err| anyhow!("{}", err))?;
     let index = clang::Index::new(&clang, true, false);
     let tu = index.parser(path).parse()?;
     let mut vector = vec![];
@@ -40,4 +41,10 @@ pub fn tokenize(path: &Path) -> Result<Vec<Token>, String> {
         }
     }
     Ok(vector)
+}
+
+pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
+    let mut temp = NamedTempFile::new()?;
+    write!(temp, "{}", content)?;
+    tokenize(&temp.into_temp_path())
 }

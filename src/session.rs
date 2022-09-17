@@ -54,10 +54,10 @@ mod tests {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct LoginRequest {
-    user_name: String,
-    password: String,
+    pub user_name: String,
+    pub password: String,
 }
 
 #[post("/login")]

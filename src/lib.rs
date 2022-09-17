@@ -10,6 +10,7 @@ pub mod lang;
 pub mod models;
 pub mod schema;
 pub mod session;
+pub mod submit;
 pub mod token;
 
 pub type DbConnection = PgConnection;

@@ -1,8 +1,13 @@
 use crate::token::Token;
 use actix_web::{error::ErrorInternalServerError, Error};
+use adler32::RollingAdler32;
 use anyhow::anyhow;
 use log::*;
-use std::fmt::Display;
+use std::{
+    collections::VecDeque,
+    fmt::Display,
+    hash::{Hash, Hasher},
+};
 use uuid::Uuid;
 
 #[derive(Copy, Clone)]
@@ -43,6 +48,122 @@ pub fn find_matches(left: &[Token], right: &[Token]) -> Vec<LineMatch> {
         }
     }
     line_matches
+}
+
+#[derive(Clone, Copy)]
+pub struct Fingerprint {
+    pub hash: u64,
+    pub offset: usize,
+}
+
+pub fn fingerprint<I>(mut iter: I, noise: usize, guarantee: usize) -> Vec<Fingerprint>
+where
+    I: Iterator<Item = u8>,
+{
+    let mut res = vec![];
+    // initial rolling `noise`-gram hashes
+    let mut items = VecDeque::new();
+    let mut hasher = RollingAdler32::new();
+    for _ in 0..noise {
+        if let Some(e) = iter.next() {
+            items.push_back(e);
+            hasher.update(e);
+        } else {
+            // too short
+            return res;
+        }
+    }
+
+    // window of hashes
+    let window_size = guarantee - noise + 1;
+    let mut hashes = VecDeque::new();
+    for _ in 0..window_size {
+        hashes.push_back(u64::MAX);
+    }
+
+    let mut min_hash_index = 0;
+    let mut window_offset = 0;
+    while let Some(e) = iter.next() {
+        // alder32 is not random enough!
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        hasher.hash().hash(&mut h);
+        let new_hash = h.finish();
+
+        if new_hash < hashes[min_hash_index] {
+            // a new minimum
+            min_hash_index = window_size - 1;
+            hashes.pop_front();
+            hashes.push_back(new_hash);
+            res.push(Fingerprint {
+                hash: new_hash,
+                offset: window_offset,
+            });
+        } else {
+            // update window
+            hashes.pop_front();
+            hashes.push_back(new_hash);
+            if min_hash_index == 0 {
+                // rightmost minimum
+                for i in (0..window_size).rev() {
+                    if hashes[i] < hashes[min_hash_index] {
+                        min_hash_index = i;
+                    }
+                }
+                res.push(Fingerprint {
+                    hash: new_hash,
+                    offset: window_offset - window_size + 1 + min_hash_index,
+                });
+            } else {
+                min_hash_index -= 1;
+            }
+        }
+
+        // update rolling hash
+        hasher.remove(noise, items.pop_front().unwrap());
+        items.push_back(e);
+        hasher.update(e);
+        window_offset += 1;
+    }
+    res
+}
+
+pub fn all_fingerprint<I>(mut iter: I, noise: usize) -> Vec<Fingerprint>
+where
+    I: Iterator<Item = u8>,
+{
+    let mut res = vec![];
+    // initial rolling `noise`-gram hashes
+    let mut items = VecDeque::new();
+    let mut hasher = RollingAdler32::new();
+    for _ in 0..noise {
+        if let Some(e) = iter.next() {
+            items.push_back(e);
+            hasher.update(e);
+        } else {
+            // too short
+            return res;
+        }
+    }
+
+    let mut window_offset = 0;
+    while let Some(e) = iter.next() {
+        // alder32 is not random enough!
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        hasher.hash().hash(&mut h);
+        let new_hash = h.finish();
+
+        res.push(Fingerprint {
+            hash: new_hash,
+            offset: window_offset,
+        });
+
+        // update rolling hash
+        hasher.remove(noise, items.pop_front().unwrap());
+        items.push_back(e);
+        hasher.update(e);
+        window_offset += 1;
+    }
+    res
 }
 
 pub fn generate_uuid() -> String {
