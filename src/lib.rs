@@ -8,6 +8,7 @@ pub mod common;
 pub mod env;
 pub mod lang;
 pub mod models;
+pub mod render;
 pub mod schema;
 pub mod session;
 pub mod submit;

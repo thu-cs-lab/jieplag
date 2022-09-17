@@ -22,8 +22,9 @@ pub struct Match {
 
 pub struct Block {
     pub left_line_from: usize,
+    pub left_line_to: usize,
     pub right_line_from: usize,
-    pub length: usize,
+    pub right_line_to: usize,
 }
 
 pub fn compute_matching_blocks(
@@ -119,15 +120,22 @@ pub fn compute_matching_blocks(
 
     let mut res = vec![];
 
-    for m in matches.iter() {
+    for (idx, m) in matches.iter().enumerate() {
         let line_from_left = token_left[m.pattern_index].line as usize - 1;
+        let line_to_left = token_left[m.pattern_index + m.length - 1].line as usize - 1;
         let line_from_right = token_right[m.text_index].line as usize - 1;
+        let line_to_right = token_right[m.text_index + m.length - 1].line as usize - 1;
 
         res.push(Block {
             left_line_from: line_from_left,
+            left_line_to: line_to_left,
             right_line_from: line_from_right,
-            length: m.length,
+            right_line_to: line_to_right,
         });
+
+        info!("Match #{}:", idx + 1);
+        info!("Left L{}-L{}", line_from_left, line_to_left);
+        info!("Right L{}-L{}", line_from_right, line_to_right);
     }
     Ok(res)
 }
@@ -214,7 +222,7 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
     for (i, num_matches) in sorted_m.iter().rev().take(40) {
         let left = i % all_tokens.len();
         let right = i / all_tokens.len();
-        if left < right {
+        if left <= right {
             // skip duplicatie
             continue;
         }

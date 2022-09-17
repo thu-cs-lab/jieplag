@@ -176,9 +176,9 @@ fn main() -> anyhow::Result<()> {
         writeln!(file_right, "</font>")?;
 
         println!("Match #{}:", idx + 1);
-        println!("Left:");
+        println!("Left L{}-L{}:", line_from_left, line_to_left);
         println!("{}", lines_left[line_from_left..=line_to_left].join("\n"));
-        println!("Right:");
+        println!("Right L{}-L{}:", line_from_right, line_to_right);
         println!(
             "{}",
             lines_right[line_from_right..=line_to_right].join("\n")

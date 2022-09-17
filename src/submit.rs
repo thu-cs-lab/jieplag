@@ -89,8 +89,9 @@ async fn work(
                 .map(|b| NewBlock {
                     match_id: *match_id,
                     left_line_from: b.left_line_from as i32,
+                    left_line_to: b.left_line_to as i32,
                     right_line_from: b.right_line_from as i32,
-                    length: b.length as i32,
+                    right_line_to: b.right_line_to as i32,
                 })
                 .collect();
             diesel::insert_into(crate::schema::blocks::table)

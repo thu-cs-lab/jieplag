@@ -5,8 +5,9 @@ diesel::table! {
         id -> Int4,
         match_id -> Int4,
         left_line_from -> Int4,
+        left_line_to -> Int4,
         right_line_from -> Int4,
-        length -> Int4,
+        right_line_to -> Int4,
     }
 }
 
