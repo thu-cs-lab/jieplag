@@ -120,9 +120,9 @@ fn main() -> anyhow::Result<()> {
     }
 
     let mut file_left = File::create("match-left.html")?;
-    writeln!(file_left, "<html><head></head><body><pre>")?;
+    writeln!(file_left, "<html><head><meta charset=\"UTF-8\"></head><body><pre>")?;
     let mut file_right = File::create("match-right.html")?;
-    writeln!(file_right, "<html><head></head><body><pre>")?;
+    writeln!(file_right, "<html><head><meta charset=\"UTF-8\"></head><body><pre>")?;
 
     let mut last_line_left = 0;
     let mut last_line_right = 0;
