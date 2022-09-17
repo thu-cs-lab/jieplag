@@ -11,6 +11,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    jobs (id) {
+        id -> Int4,
+        creator_user_id -> Int4,
+        slug -> Text,
+    }
+}
+
+diesel::table! {
     matches (id) {
         id -> Int4,
         job_id -> Int4,
@@ -25,6 +33,7 @@ diesel::table! {
 diesel::table! {
     submissions (id) {
         id -> Int4,
+        job_id -> Int4,
         name -> Text,
         code -> Text,
     }
@@ -41,6 +50,7 @@ diesel::table! {
 
 diesel::allow_tables_to_appear_in_same_query!(
     blocks,
+    jobs,
     matches,
     submissions,
     users,
