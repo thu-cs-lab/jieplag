@@ -11,7 +11,7 @@ use dotenv::dotenv;
 use env_logger;
 use jieplag::{
     env::ENV,
-    render::{match_inner, match_two_columns},
+    render::{render_job, render_match, render_match_frame},
     session::login,
     submit::submit,
     DbConnection,
@@ -54,8 +54,9 @@ async fn main() -> anyhow::Result<()> {
             )
             .wrap(middleware::Logger::default())
             .service(web::scope("/api").service(login).service(submit))
-            .service(match_inner)
-            .service(match_two_columns)
+            .service(render_match)
+            .service(render_match_frame)
+            .service(render_job)
     })
     .bind("127.0.0.1:8765")?
     .run()

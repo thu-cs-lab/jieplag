@@ -7,7 +7,7 @@ use actix_web::{get, http::header, web, HttpResponse, Result};
 use diesel::prelude::*;
 
 #[get("/results/{slug}/{match_id}/{frame}")]
-pub async fn match_inner(
+pub async fn render_match_frame(
     pool: web::Data<DbPool>,
     path: web::Path<(String, i64, String)>,
 ) -> Result<HttpResponse> {
@@ -181,7 +181,7 @@ pub async fn match_inner(
 }
 
 #[get("/results/{slug}/{match_id}/")]
-pub async fn match_two_columns(_path: web::Path<(String, i64)>) -> Result<HttpResponse> {
+pub async fn render_match(_path: web::Path<(String, i64)>) -> Result<HttpResponse> {
     let res = format!(
         r#"
 <html>
@@ -200,6 +200,53 @@ pub async fn match_two_columns(_path: web::Path<(String, i64)>) -> Result<HttpRe
     "#
     );
 
+    return Ok(HttpResponse::Ok()
+        .append_header(header::ContentType::html())
+        .body(res));
+}
+
+#[get("/results/{slug}/")]
+pub async fn render_job(pool: web::Data<DbPool>, slug: web::Path<String>) -> Result<HttpResponse> {
+    let mut conn = pool.get().map_err(err)?;
+    let job = crate::schema::jobs::dsl::jobs
+        .filter(crate::schema::jobs::dsl::slug.eq(&*slug))
+        .first::<Job>(&mut conn)
+        .map_err(err)?;
+    let matches = crate::schema::matches::dsl::matches
+        .filter(crate::schema::matches::dsl::job_id.eq(job.id))
+        .load::<Match>(&mut conn)
+        .map_err(err)?;
+
+    let mut res = "<html><head></head><body>".to_string();
+    res += "<table><tbody>";
+
+    // add title
+    res += "<tr><th>File 1</th><th>File 2</th><th>Lines Matched</th></tr>";
+
+    for (idx, m) in matches.iter().enumerate() {
+        res += "<tr>";
+        let left_s = crate::schema::submissions::dsl::submissions
+            .filter(crate::schema::submissions::dsl::id.eq(m.left_submission_id))
+            .first::<Submission>(&mut conn)
+            .map_err(err)?;
+        res += &format!(
+            "<td><a href=\"./{}/\">{} ({}%)</a></td>",
+            idx, left_s.name, m.left_match_rate
+        );
+        let right_s = crate::schema::submissions::dsl::submissions
+            .filter(crate::schema::submissions::dsl::id.eq(m.right_submission_id))
+            .first::<Submission>(&mut conn)
+            .map_err(err)?;
+        res += &format!(
+            "<td><a href=\"./{}/\">{} ({}%)</a></td>",
+            idx, right_s.name, m.right_match_rate
+        );
+        res += &format!("<td align=\"right\">{}</td>", m.lines_matched);
+        res += "</tr>";
+    }
+
+    res += "</tbody></table>";
+    res += "</body></html>";
     return Ok(HttpResponse::Ok()
         .append_header(header::ContentType::html())
         .body(res));

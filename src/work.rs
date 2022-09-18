@@ -287,7 +287,7 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
             left_match_rate: (left_matched_lines * 100 / left_lines) as i32,
             right_submission_idx: right,
             right_match_rate: (right_matched_lines * 100 / right_lines) as i32,
-            lines_matched: std::cmp::max(left_matched_lines, right_matched_lines),
+            lines_matched: left_matched_lines + right_matched_lines,
             blocks,
         })
     }
