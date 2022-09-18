@@ -121,7 +121,6 @@ fn main() -> anyhow::Result<()> {
     }
 
     // ensure matches are on distinct lines
-    // align to first/last token in the line
     let mut bitvec_left = bitvec![0; lines_left.len()];
     let mut bitvec_right = bitvec![0; lines_right.len()];
     let mut i = 0;

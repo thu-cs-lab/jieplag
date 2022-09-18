@@ -3,6 +3,7 @@ use crate::{
     lang::{tokenize_str, Language},
     submit::SubmitRequest,
 };
+use bitvec::prelude::*;
 use log::*;
 use std::collections::HashMap;
 
@@ -37,9 +38,11 @@ pub fn compute_matching_blocks(
 ) -> anyhow::Result<Vec<Block>> {
     let token_left = crate::lang::tokenize_str(left, language)?;
     let token_kind_left: Vec<u8> = token_left.iter().map(|t| t.kind).collect();
+    let lines_left: Vec<&str> = left.lines().collect();
 
     let token_right = crate::lang::tokenize_str(&right, language).unwrap();
     let token_kind_right: Vec<u8> = token_right.iter().map(|t| t.kind).collect();
+    let lines_right: Vec<&str> = right.lines().collect();
 
     let initial_search_length = 40;
     let minimum_match_length = 20;
@@ -118,6 +121,34 @@ pub fn compute_matching_blocks(
         };
         filter(&left_template_matches, true);
         filter(&right_template_matches, false);
+    }
+
+    // ensure matches are on distinct lines
+    let mut bitvec_left = bitvec![0; lines_left.len()];
+    let mut bitvec_right = bitvec![0; lines_right.len()];
+    let mut i = 0;
+    while i < matches.len() {
+        let m = matches[i];
+        let line_from_left = token_left[m.pattern_index].line as usize - 1;
+        let line_to_left = token_left[m.pattern_index + m.length - 1].line as usize - 1;
+        let line_from_right = token_right[m.text_index].line as usize - 1;
+        let line_to_right = token_right[m.text_index + m.length - 1].line as usize - 1;
+        if !bitvec_left[line_from_left]
+            && !bitvec_left[line_to_left]
+            && !bitvec_right[line_from_right]
+            && !bitvec_right[line_to_right]
+        {
+            // safe
+            for i in line_from_left..=line_to_left {
+                bitvec_left.set(i, true);
+            }
+            for i in line_from_right..=line_to_right {
+                bitvec_right.set(i, true);
+            }
+            i += 1;
+        } else {
+            matches.remove(i);
+        }
     }
 
     let mut res = vec![];

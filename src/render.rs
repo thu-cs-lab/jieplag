@@ -82,14 +82,16 @@ pub async fn match_inner(
                             b.right_line_to
                         } as usize;
 
+                        assert!(last_line <= line_from);
+                        assert!(line_from <= line_to);
                         if last_line < line_from {
                             res += &html_escape::encode_text(
                                 &lines[last_line..=(line_from - 1)].join("\n"),
                             )
                             .to_string();
                             res += "\n";
-                            last_line = line_to + 1;
                         }
+                        last_line = line_to + 1;
 
                         // add link to jump to opposite side
                         res += &format!("<a name=\"{}\">", line_from);
