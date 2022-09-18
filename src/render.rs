@@ -1,5 +1,5 @@
 use crate::{
-    common::err,
+    common::{err, gen_svg},
     models::{Block, Job, Match, Submission},
     DbPool,
 };
@@ -35,6 +35,7 @@ pub async fn render_match_frame(
         .filter(crate::schema::blocks::dsl::match_id.eq(m.id))
         .load::<Block>(&mut conn)
         .map_err(err)?;
+    let colors = ["#FF0000", "#00FF00", "#0000FF", "#00FFFF", "#FF00FF"];
     let mut res;
     if is_top {
         res = "<html><head><meta charset=\"UTF-8\"></head>".to_string();
@@ -48,13 +49,13 @@ pub async fn render_match_frame(
             .first::<Submission>(&mut conn)
             .map_err(err)?;
         res += &format!("<th>{} ({}%)</th>", left_s.name, m.left_match_rate);
-        res += "<th><img src=\"http://moss.stanford.edu/bitmaps/tm_0_30.gif\" border=\"0\" align=\"left\"></th>";
+        res += &format!("<th>{}</th>", gen_svg("#FF0000", m.left_match_rate));
         let right_s = crate::schema::submissions::dsl::submissions
             .filter(crate::schema::submissions::dsl::id.eq(m.right_submission_id))
             .first::<Submission>(&mut conn)
             .map_err(err)?;
         res += &format!("<th>{} ({}%)</th>", right_s.name, m.right_match_rate);
-        res += "<th><img src=\"http://moss.stanford.edu/bitmaps/tm_0_30.gif\" border=\"0\" align=\"left\"></th>";
+        res += &format!("<th>{}</th>", gen_svg("#FF0000", m.right_match_rate));
         res += "<th> </th>";
         res += "</tr>";
 
@@ -79,14 +80,14 @@ pub async fn render_match_frame(
             );
             let left_ratio =
                 (block.left_line_to - block.left_line_from + 1) * 100 / left_lines as i32;
-            res += &format!("<td><img src=\"http://moss.stanford.edu/bitmaps/tm_{}_{}.gif\" border=\"0\" align=\"left\"></td>", idx % 5, left_ratio);
+            res += &format!("<td>{}</td>", gen_svg(colors[idx % 5], left_ratio));
             res += &format!(
                 "<td><a href=\"./right#{}\" target=\"right\">{}-{}</td>",
                 block.right_line_from, block.right_line_from, block.right_line_to
             );
             let right_ratio =
                 (block.right_line_to - block.right_line_from + 1) * 100 / right_lines as i32;
-            res += &format!("<td><img src=\"http://moss.stanford.edu/bitmaps/tm_{}_{}.gif\" border=\"0\" align=\"right\"></td>", idx % 5, right_ratio);
+            res += &format!("<td>{}</td>", gen_svg(colors[idx % 5], right_ratio));
             res += "<td> </td>";
             res += "</tr>";
         }
@@ -106,7 +107,6 @@ pub async fn render_match_frame(
 
         res = "<html><head><meta charset=\"UTF-8\"></head><body><pre>".to_string();
         let mut last_line = 0;
-        let colors = ["#FF0000", "#00FF00", "#0000FF", "#00FFFF", "#FF00FF"];
 
         // add index to blocks before sorting
         // so that index remains sync-ed in left & right panels
@@ -157,8 +157,8 @@ pub async fn render_match_frame(
                 "<a href=\"{}#{}\" target=\"{}\">",
                 opposite_side, opposite_line_from, opposite_side
             );
-            res += &format!("<img src=\"http://moss.stanford.edu/bitmaps/tm_{}_1.gif\" alt=\"other\" border=\"0\" align=\"left\"></a>", idx % 5);
-            res += "\n";
+            res += &gen_svg(colors[idx % 5], 1);
+            res += "</a>\n";
             res += &format!(
                 "{}",
                 html_escape::encode_text(&lines[line_from..=line_to].join("\n"))

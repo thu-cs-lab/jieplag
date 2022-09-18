@@ -1,4 +1,5 @@
 use bitvec::prelude::*;
+use jieplag::common::gen_svg;
 use rkr_gst::Match;
 use std::{
     fs::File,
@@ -195,7 +196,9 @@ fn main() -> anyhow::Result<()> {
             }
             last_line = line_to + 1;
 
-            write!(file, "<font color=\"{}\">", colors[idx % 5])?;
+            let color = colors[idx % 5];
+            write!(file, "<font color=\"{}\">", color)?;
+            writeln!(file, "{}", gen_svg(color, 0))?;
             writeln!(
                 file,
                 "{}",
