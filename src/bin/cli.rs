@@ -1,4 +1,6 @@
+use dotenv::dotenv;
 use jieplag::{
+    env::ENV,
     lang::Language,
     session::LoginRequest,
     submit::{Submission, SubmitRequest},
@@ -29,12 +31,13 @@ struct Args {
 }
 
 fn main() -> anyhow::Result<()> {
+    dotenv().ok();
     let opts = Args::from_args();
     env_logger::init();
 
     let client = reqwest::blocking::Client::new();
     let body = client
-        .post("http://localhost:8765/api/submit")
+        .post(format!("{}/api/submit", ENV.public_url))
         .json(&SubmitRequest {
             login: Some(LoginRequest {
                 user_name: opts.user_name,
