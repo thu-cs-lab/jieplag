@@ -16,6 +16,10 @@ struct Args {
     #[structopt(short, long)]
     password: String,
 
+    /// Language
+    #[structopt(short, long)]
+    language: String,
+
     /// Path to template file
     #[structopt(short = "b", long)]
     template: PathBuf,
@@ -36,7 +40,11 @@ fn main() -> anyhow::Result<()> {
                 user_name: opts.user_name,
                 password: opts.password,
             }),
-            language: Language::Cpp,
+            language: match opts.language.as_str() {
+                "c++" | "cpp" | "cc" => Language::Cpp,
+                "rust" => Language::Rust,
+                _ => unimplemented!("Language: {}", opts.language),
+            },
             template: Some(std::fs::read_to_string(&opts.template)?),
             submissions: opts
                 .code

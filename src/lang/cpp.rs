@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use clang::token::TokenKind;
 use std::{
     hash::{Hash, Hasher},
-    path::{Path, PathBuf},
+    path::Path,
 };
 use tempfile::tempdir;
 
@@ -31,7 +31,6 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
             };
 
             vector.push(Token {
-                path: PathBuf::from(path),
                 spelling: token.get_spelling(),
                 kind: kind_u8,
                 line: token.get_location().get_file_location().line,
@@ -47,4 +46,37 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let path = dir.path().join("code.cpp");
     std::fs::write(&path, content)?;
     tokenize(&path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::tokenize_str;
+
+    #[test]
+    fn test_tokenize() {
+        let code = "int main() { return 0; }";
+        let tokens = tokenize_str(code).unwrap();
+
+        eprintln!("{:?}", tokens);
+
+        assert_eq!(tokens[0].spelling, "int");
+        assert_eq!(tokens[0].line, 1);
+        assert_eq!(tokens[0].column, 1);
+
+        assert_eq!(tokens[1].spelling, "main");
+        assert_eq!(tokens[1].line, 1);
+        assert_eq!(tokens[1].column, 5);
+
+        assert_eq!(tokens[2].spelling, "(");
+        assert_eq!(tokens[2].line, 1);
+        assert_eq!(tokens[2].column, 9);
+
+        assert_eq!(tokens[3].spelling, ")");
+        assert_eq!(tokens[3].line, 1);
+        assert_eq!(tokens[3].column, 10);
+
+        assert_eq!(tokens[8].spelling, "}");
+        assert_eq!(tokens[8].line, 1);
+        assert_eq!(tokens[8].column, 24);
+    }
 }
