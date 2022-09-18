@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 pub mod cpp;
+pub mod python;
 pub mod rust;
 pub mod verilog;
 
@@ -12,6 +13,7 @@ pub enum Language {
     Cpp,
     Rust,
     Verilog,
+    Python,
 }
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
@@ -25,6 +27,8 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
         rust::tokenize(path)
     } else if extension == "v" {
         verilog::tokenize(path)
+    } else if extension == "py" {
+        python::tokenize(path)
     } else {
         Err(anyhow!(
             "Unsupported file extension: {:?}",
@@ -38,5 +42,6 @@ pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Tok
         Language::Cpp => cpp::tokenize_str(content),
         Language::Rust => rust::tokenize_str(content),
         Language::Verilog => verilog::tokenize_str(content),
+        Language::Python => verilog::tokenize_str(content),
     }
 }
