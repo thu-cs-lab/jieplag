@@ -1,3 +1,4 @@
+use bitvec::prelude::*;
 use rkr_gst::Match;
 use std::{
     fs::File,
@@ -119,6 +120,35 @@ fn main() -> anyhow::Result<()> {
         filter(&right_template_matches, false);
     }
 
+    // ensure matches are on distinct lines
+    // align to first/last token in the line
+    let mut bitvec_left = bitvec![0; lines_left.len()];
+    let mut bitvec_right = bitvec![0; lines_right.len()];
+    let mut i = 0;
+    while i < matches.len() {
+        let m = matches[i];
+        let line_from_left = token_left[m.pattern_index].line as usize - 1;
+        let line_to_left = token_left[m.pattern_index + m.length - 1].line as usize - 1;
+        let line_from_right = token_right[m.text_index].line as usize - 1;
+        let line_to_right = token_right[m.text_index + m.length - 1].line as usize - 1;
+        if !bitvec_left[line_from_left]
+            && !bitvec_left[line_to_left]
+            && !bitvec_right[line_from_right]
+            && !bitvec_right[line_to_right]
+        {
+            // safe
+            for i in line_from_left..=line_to_left {
+                bitvec_left.set(i, true);
+            }
+            for i in line_from_right..=line_to_right {
+                bitvec_right.set(i, true);
+            }
+            i += 1;
+        } else {
+            matches.remove(i);
+        }
+    }
+
     for is_left in [true, false] {
         let side = if is_left { "left" } else { "right" };
         let mut file = File::create(format!("match-{}.html", side))?;
@@ -143,29 +173,36 @@ fn main() -> anyhow::Result<()> {
         let token = if is_left { &token_left } else { &token_right };
         let lines = if is_left { &lines_left } else { &lines_right };
         for (idx, m) in matches.iter() {
-            let line_from = token[m.pattern_index].line as usize - 1;
-            let line_to = token[m.pattern_index + m.length - 1].line as usize - 1;
+            let index = if is_left {
+                m.pattern_index
+            } else {
+                m.text_index
+            };
+            let line_from = token[index].line as usize - 1;
+            let line_to = token[index + m.length - 1].line as usize - 1;
 
             println!("Match #{}:", idx + 1);
             println!("L{}-L{}:", line_from, line_to);
             println!("{}", lines[line_from..=line_to].join("\n"));
 
             assert!(last_line <= line_from);
+            assert!(line_from <= line_to);
             if last_line < line_from {
                 writeln!(
                     file,
                     "{}",
                     html_escape::encode_text(&lines[last_line..=(line_from - 1)].join("\n"))
                 )?;
-                last_line = line_to + 1;
             }
-            writeln!(file, "<font color=\"{}\">", colors[idx % 3])?;
+            last_line = line_to + 1;
+
+            write!(file, "<font color=\"{}\">", colors[idx % 3])?;
             writeln!(
                 file,
                 "{}",
                 html_escape::encode_text(&lines[line_from..=line_to].join("\n"))
             )?;
-            writeln!(file, "</font>")?;
+            write!(file, "</font>")?;
         }
 
         if last_line < lines.len() {
