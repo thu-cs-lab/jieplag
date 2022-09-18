@@ -1,5 +1,6 @@
 use crate::{
     common::{err, generate_uuid},
+    env::ENV,
     lang::Language,
     models::{NewBlock, NewJob, NewMatch, NewSubmission, User},
     session::{verify, LoginRequest},
@@ -135,5 +136,6 @@ pub async fn submit(
     }
     info!("Got submission from {}", user_id);
     let slug = work(conn, (*body).clone(), user_id).await.map_err(err)?;
-    return Ok(HttpResponse::Ok().json(slug));
+    let url = format!("{}/results/{}/", ENV.public_url, slug);
+    return Ok(HttpResponse::Ok().json(url));
 }

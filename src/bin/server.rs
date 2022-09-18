@@ -1,3 +1,4 @@
+use actix_http::Uri;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
     cookie::Key,
@@ -36,6 +37,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Setup Server");
     let secret = ENV.cookie_secret.clone();
     let secret = digest::digest(&digest::SHA512, secret.as_bytes());
+    let uri = ENV.public_url.parse::<Uri>()?;
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
@@ -53,12 +55,15 @@ async fn main() -> anyhow::Result<()> {
                 .build(),
             )
             .wrap(middleware::Logger::default())
-            .service(web::scope("/api").service(login).service(submit))
-            .service(render_match)
-            .service(render_match_frame)
-            .service(render_job)
+            .service(
+                web::scope(uri.path())
+                    .service(web::scope("/api").service(login).service(submit))
+                    .service(render_match)
+                    .service(render_match_frame)
+                    .service(render_job),
+            )
     })
-    .bind("127.0.0.1:8765")?
+    .bind("0.0.0.0:8765")?
     .run()
     .await?;
     Ok(())
