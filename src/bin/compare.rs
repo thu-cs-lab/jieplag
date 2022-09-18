@@ -158,7 +158,7 @@ fn main() -> anyhow::Result<()> {
 
         let mut last_line = 0;
 
-        let colors = ["#FF0000", "#00FF00", "#0000FF"];
+        let colors = ["#FF0000", "#00FF00", "#0000FF", "#00FFFF", "#FF00FF"];
         let mut matches: Vec<(usize, &Match)> = matches.iter().enumerate().collect();
 
         // sort by line_from
@@ -195,7 +195,7 @@ fn main() -> anyhow::Result<()> {
             }
             last_line = line_to + 1;
 
-            write!(file, "<font color=\"{}\">", colors[idx % 3])?;
+            write!(file, "<font color=\"{}\">", colors[idx % 5])?;
             writeln!(
                 file,
                 "{}",
