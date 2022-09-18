@@ -50,12 +50,14 @@ pub fn find_matches(left: &[Token], right: &[Token]) -> Vec<LineMatch> {
     line_matches
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Fingerprint {
     pub hash: u64,
     pub offset: usize,
 }
 
+// https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf
+// void winnow(int w)
 pub fn fingerprint<I>(mut iter: I, noise: usize, guarantee: usize) -> Vec<Fingerprint>
 where
     I: Iterator<Item = u8>,
@@ -110,7 +112,7 @@ where
                     }
                 }
                 res.push(Fingerprint {
-                    hash: new_hash,
+                    hash: hashes[min_hash_index],
                     offset: window_offset - window_size + 1 + min_hash_index,
                 });
             } else {
@@ -182,4 +184,45 @@ pub fn err<T: Display>(err: T) -> Error {
         "Please contact admin with error token {}",
         error_token
     )))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::all_fingerprint;
+    use super::fingerprint;
+
+    #[test]
+    fn test_all_fingerprint() {
+        // example taken from paper
+        let text = "adorunrunrunadorunrun";
+        let fingerprints = all_fingerprint(text.bytes(), 5);
+        eprintln!("{:?}", fingerprints);
+
+        // adoru @ 0, 12
+        assert_eq!(fingerprints[0].hash, fingerprints[12].hash);
+
+        // dorun @ 1, 13
+        assert_eq!(fingerprints[1].hash, fingerprints[13].hash);
+
+        // runru @ 3, 6, 15
+        assert_eq!(fingerprints[3].hash, fingerprints[6].hash);
+        assert_eq!(fingerprints[3].hash, fingerprints[15].hash);
+    }
+
+    #[test]
+    fn test_fingerprint() {
+        // example taken from paper
+        let text = "adorunrunrunadorunrun";
+        let all_fingerprints = all_fingerprint(text.bytes(), 5);
+        eprintln!("{:?}", all_fingerprints);
+
+        // windows size of hashes = 2
+        let fingerprints = fingerprint(text.bytes(), 5, 6);
+        eprintln!("{:?}", fingerprints);
+
+        // check if subset
+        for f in &fingerprints {
+            assert!(all_fingerprints.contains(f), "{:?} not found", f);
+        }
+    }
 }

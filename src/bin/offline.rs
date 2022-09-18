@@ -107,6 +107,7 @@ fn main() -> anyhow::Result<()> {
             continue;
         }
 
+        // https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf
         let template_token = &template_tokens[submission];
         let template_fingerprint = all_fingerprint(template_token.iter().map(|t| t.kind), 40);
         let mut local_tokens = vec![];
