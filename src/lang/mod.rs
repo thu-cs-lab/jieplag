@@ -5,11 +5,13 @@ use std::path::Path;
 
 pub mod cpp;
 pub mod rust;
+pub mod verilog;
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum Language {
     Cpp,
     Rust,
+    Verilog,
 }
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
@@ -21,6 +23,8 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
         cpp::tokenize(path)
     } else if extension == "rs" {
         rust::tokenize(path)
+    } else if extension == "v" {
+        verilog::tokenize(path)
     } else {
         Err(anyhow!(
             "Unsupported file extension: {:?}",
@@ -33,5 +37,6 @@ pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Tok
     match language {
         Language::Cpp => cpp::tokenize_str(content),
         Language::Rust => rust::tokenize_str(content),
+        Language::Verilog => verilog::tokenize_str(content),
     }
 }

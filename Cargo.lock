@@ -654,7 +654,7 @@ dependencies = [
  "convert_case",
  "proc-macro2",
  "quote",
- "rustc_version",
+ "rustc_version 0.4.0",
  "syn",
 ]
 
@@ -918,7 +918,7 @@ version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d621efb26863f0e9924c6ac577e8275e5e6b77455db64ffa6c65c904e9e132c"
 dependencies = [
- "unicode-segmentation",
+ "unicode-segmentation 1.10.0",
 ]
 
 [[package]]
@@ -1119,6 +1119,7 @@ dependencies = [
  "structopt",
  "tempfile",
  "uuid",
+ "verilog-lang",
  "walkdir",
 ]
 
@@ -1636,11 +1637,20 @@ dependencies = [
 
 [[package]]
 name = "rustc_version"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5f5376ea5e30ce23c03eb77cbe4962b988deead10910c372b226388b594c084"
+dependencies = [
+ "semver 0.1.20",
+]
+
+[[package]]
+name = "rustc_version"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
 dependencies = [
- "semver",
+ "semver 1.0.14",
 ]
 
 [[package]]
@@ -1705,6 +1715,12 @@ dependencies = [
  "core-foundation-sys",
  "libc",
 ]
+
+[[package]]
+name = "semver"
+version = "0.1.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4f410fedcf71af0345d7607d246e7ad15faaadd49d240ee3b24e5dc21a820ac"
 
 [[package]]
 name = "semver"
@@ -1816,6 +1832,16 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "strcursor"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a53cb721e1f6d0dbba1296e2d7770edbec9a4888fdd8f6a22fea97a0a69b465a"
+dependencies = [
+ "rustc_version 0.1.7",
+ "unicode-segmentation 0.1.2",
+]
 
 [[package]]
 name = "strsim"
@@ -2050,6 +2076,12 @@ dependencies = [
 
 [[package]]
 name = "unicode-segmentation"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b905d0fc2a1f0befd86b0e72e31d1787944efef9d38b9358a9e92a69757f7e3b"
+
+[[package]]
+name = "unicode-segmentation"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fdbf052a0783de01e944a6ce7a8cb939e295b1e7be835a1112c3b9a7f047a5a"
@@ -2113,6 +2145,17 @@ name = "vec_map"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
+
+[[package]]
+name = "verilog-lang"
+version = "0.1.0"
+source = "git+https://github.com/jiegec/verilog-lang#9b7b27d7a96af1400f9184e2720fa1b73d40f14e"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "serde",
+ "strcursor",
+]
 
 [[package]]
 name = "version_check"

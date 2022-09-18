@@ -15,11 +15,13 @@ actix-rt = "2.7.0"
 actix-session = { version = "0.7.2", features = ["cookie-session"] }
 adler32 = "1.2.0"
 anyhow = "1.0.65"
+bitvec = "1.0.1"
 clang = "2.0.0"
 diesel = { version = "2.0.0", features = ["postgres", "r2d2", "chrono"] }
 diesel_migrations = "2.0.0"
 dotenv = "0.15.0"
 env_logger = "0.9.0"
+html-escape = "0.2.11"
 lazy_static = "1.4.0"
 log = "0.4.17"
 proc-macro2 = { version = "1.0.43", features = ["span-locations"] }
@@ -29,8 +31,8 @@ ring = "0.16.20"
 rkr-gst = "0.1.1"
 serde = { version = "1.0.144", features = ["derive"] }
 structopt = "0.3.26"
+tempfile = "3.3.0"
 walkdir = "2.3.2"
 uuid = { version = "1.1.2", features = ["v4"] }
-html-escape = "0.2.11"
-tempfile = "3.3.0"
-bitvec = "1.0.1"
+verilog-lang = { git = "https://github.com/jiegec/verilog-lang" }
+
