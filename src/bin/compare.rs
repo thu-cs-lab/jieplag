@@ -119,73 +119,65 @@ fn main() -> anyhow::Result<()> {
         filter(&right_template_matches, false);
     }
 
-    let mut file_left = File::create("match-left.html")?;
-    writeln!(
-        file_left,
-        "<html><head><meta charset=\"UTF-8\"></head><body><pre>"
-    )?;
-    let mut file_right = File::create("match-right.html")?;
-    writeln!(
-        file_right,
-        "<html><head><meta charset=\"UTF-8\"></head><body><pre>"
-    )?;
-
-    let mut last_line_left = 0;
-    let mut last_line_right = 0;
-    let colors = ["#FF0000", "#00FF00", "#0000FF"];
-    for (idx, m) in matches.iter().enumerate() {
-        let line_from_left = token_left[m.pattern_index].line as usize - 1;
-        let line_to_left = token_left[m.pattern_index + m.length - 1].line as usize - 1;
-        let line_from_right = token_right[m.text_index].line as usize - 1;
-        let line_to_right = token_right[m.text_index + m.length - 1].line as usize - 1;
-
-        if last_line_left < line_from_left {
-            writeln!(
-                file_left,
-                "{}",
-                html_escape::encode_text(
-                    &lines_left[last_line_left..=(line_from_left - 1)].join("\n")
-                )
-            )?;
-            last_line_left = line_to_left + 1;
-        }
-        writeln!(file_left, "<font color=\"{}\">", colors[idx % 3])?;
+    for is_left in [true, false] {
+        let side = if is_left { "left" } else { "right" };
+        let mut file = File::create(format!("match-{}.html", side))?;
         writeln!(
-            file_left,
-            "{}",
-            html_escape::encode_text(&lines_left[line_from_left..=line_to_left].join("\n"))
+            file,
+            "<html><head><meta charset=\"UTF-8\"></head><body><pre>"
         )?;
-        writeln!(file_left, "</font>")?;
 
-        if last_line_right < line_from_right {
+        let mut last_line = 0;
+
+        let colors = ["#FF0000", "#00FF00", "#0000FF"];
+        let mut matches: Vec<(usize, &Match)> = matches.iter().enumerate().collect();
+
+        // sort by line_from
+        matches.sort_by_key(|m| {
+            if is_left {
+                token_left[m.1.pattern_index].line as usize - 1
+            } else {
+                token_right[m.1.text_index].line as usize - 1
+            }
+        });
+        let token = if is_left { &token_left } else { &token_right };
+        let lines = if is_left { &lines_left } else { &lines_right };
+        for (idx, m) in matches.iter() {
+            let line_from = token[m.pattern_index].line as usize - 1;
+            let line_to = token[m.pattern_index + m.length - 1].line as usize - 1;
+
+            println!("Match #{}:", idx + 1);
+            println!("L{}-L{}:", line_from, line_to);
+            println!("{}", lines[line_from..=line_to].join("\n"));
+
+            assert!(last_line <= line_from);
+            if last_line < line_from {
+                writeln!(
+                    file,
+                    "{}",
+                    html_escape::encode_text(&lines[last_line..=(line_from - 1)].join("\n"))
+                )?;
+                last_line = line_to + 1;
+            }
+            writeln!(file, "<font color=\"{}\">", colors[idx % 3])?;
             writeln!(
-                file_right,
+                file,
                 "{}",
-                html_escape::encode_text(
-                    &lines_right[last_line_right..=(line_from_right - 1)].join("\n")
-                )
+                html_escape::encode_text(&lines[line_from..=line_to].join("\n"))
             )?;
-            last_line_right = line_to_right + 1;
+            writeln!(file, "</font>")?;
         }
-        writeln!(file_right, "<font color=\"{}\">", colors[idx % 3])?;
-        writeln!(
-            file_right,
-            "{}",
-            html_escape::encode_text(&lines_right[line_from_right..=line_to_right].join("\n"))
-        )?;
-        writeln!(file_right, "</font>")?;
 
-        println!("Match #{}:", idx + 1);
-        println!("Left L{}-L{}:", line_from_left, line_to_left);
-        println!("{}", lines_left[line_from_left..=line_to_left].join("\n"));
-        println!("Right L{}-L{}:", line_from_right, line_to_right);
-        println!(
-            "{}",
-            lines_right[line_from_right..=line_to_right].join("\n")
-        );
+        if last_line < lines.len() {
+            writeln!(
+                file,
+                "{}",
+                html_escape::encode_text(&lines[last_line..].join("\n"))
+            )?;
+        }
+
+        writeln!(file, "</pre></body></html>")?;
     }
-
-    writeln!(file_left, "</pre></body></html>")?;
 
     Ok(())
 }

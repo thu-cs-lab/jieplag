@@ -21,12 +21,14 @@ pub struct Match {
 }
 
 pub struct Block {
+    // 0-based
     pub left_line_from: usize,
     pub left_line_to: usize,
     pub right_line_from: usize,
     pub right_line_to: usize,
 }
 
+/// Compute matching blocks via RKR-GST algorithm
 pub fn compute_matching_blocks(
     left: &str,
     right: &str,
@@ -223,7 +225,7 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
         let left = i % all_tokens.len();
         let right = i / all_tokens.len();
         if left <= right {
-            // skip duplicatie
+            // skip duplicate
             continue;
         }
         let num_matches = **num_matches;

@@ -56,6 +56,7 @@ pub struct Match {
 #[diesel(table_name = blocks)]
 pub struct NewBlock {
     pub match_id: i32,
+    // 0-based
     pub left_line_from: i32,
     pub left_line_to: i32,
     pub right_line_from: i32,
@@ -66,6 +67,7 @@ pub struct NewBlock {
 pub struct Block {
     pub id: i32,
     pub match_id: i32,
+    // 0-based
     pub left_line_from: i32,
     pub left_line_to: i32,
     pub right_line_from: i32,

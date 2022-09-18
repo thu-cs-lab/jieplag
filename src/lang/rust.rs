@@ -1,7 +1,7 @@
 use crate::token::Token;
 use anyhow::anyhow;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
-use std::str::FromStr;
+use std::{path::Path, str::FromStr};
 
 fn flatten(token_stream: TokenStream) -> Vec<Token> {
     let mut res = vec![];
@@ -59,6 +59,10 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
         }
     }
     res
+}
+
+pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
+    Ok(tokenize_str(&std::fs::read_to_string(path)?)?)
 }
 
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {

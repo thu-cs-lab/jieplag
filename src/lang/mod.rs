@@ -19,6 +19,8 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
         .unwrap_or_default();
     if extension == "cpp" {
         cpp::tokenize(path)
+    } else if extension == "rs" {
+        rust::tokenize(path)
     } else {
         Err(anyhow!(
             "Unsupported file extension: {:?}",
