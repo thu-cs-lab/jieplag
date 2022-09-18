@@ -47,13 +47,13 @@ pub async fn match_inner(
             .filter(crate::schema::submissions::dsl::id.eq(m.left_submission_id))
             .first::<Submission>(&mut conn)
             .map_err(err)?;
-        res += &format!("<th>{}</th>", left_s.name);
+        res += &format!("<th>{} ({}%)</th>", left_s.name, m.left_match_rate);
         res += "<th><img src=\"http://moss.stanford.edu/bitmaps/tm_0_30.gif\" border=\"0\" align=\"left\"></th>";
         let right_s = crate::schema::submissions::dsl::submissions
             .filter(crate::schema::submissions::dsl::id.eq(m.right_submission_id))
             .first::<Submission>(&mut conn)
             .map_err(err)?;
-        res += &format!("<th>{}</th>", right_s.name);
+        res += &format!("<th>{} ({}%)</th>", right_s.name, m.right_match_rate);
         res += "<th><img src=\"http://moss.stanford.edu/bitmaps/tm_0_30.gif\" border=\"0\" align=\"left\"></th>";
         res += "<th> </th>";
         res += "</tr>";

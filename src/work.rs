@@ -273,15 +273,27 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
             &req.template,
         )?;
 
+        let mut left_matched_lines = 0;
+        let mut right_matched_lines = 0;
+        for block in &blocks {
+            left_matched_lines += block.left_line_to - block.left_line_from + 1;
+            right_matched_lines += block.right_line_to - block.right_line_from + 1;
+        }
+        let left_lines = req.submissions[left].code.lines().count();
+        let right_lines = req.submissions[right].code.lines().count();
+
         matches.push(Match {
             left_submission_idx: left,
-            left_match_rate: 0,
+            left_match_rate: (left_matched_lines * 100 / left_lines) as i32,
             right_submission_idx: right,
-            right_match_rate: 0,
-            lines_matched: 0,
+            right_match_rate: (right_matched_lines * 100 / right_lines) as i32,
+            lines_matched: std::cmp::max(left_matched_lines, right_matched_lines),
             blocks,
         })
     }
+
+    matches.sort_by_key(|m| m.lines_matched);
+    matches.reverse();
 
     Ok(WorkResult { req, matches })
 }
