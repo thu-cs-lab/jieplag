@@ -191,9 +191,9 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
         }
 
         if v.len() > 5 {
-            println!("Found {} entries:", v.len());
+            debug!("Found {} entries:", v.len());
             for (f, i) in v {
-                println!(
+                debug!(
                     "{} offset {} L{} C{}",
                     req.submissions[*i].name,
                     f.offset,

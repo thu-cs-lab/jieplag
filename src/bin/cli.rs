@@ -57,7 +57,7 @@ fn main() -> anyhow::Result<()> {
         })
         .send()?
         .text()?;
-    println!("{:?}", body);
+    println!("{}", body);
 
     Ok(())
 }

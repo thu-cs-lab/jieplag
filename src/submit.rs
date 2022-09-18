@@ -33,14 +33,15 @@ async fn work(
     mut conn: PooledConnection<ConnectionManager<DbConnection>>,
     req: SubmitRequest,
     user_id: i32,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<String> {
     let work_req = req.clone();
     let work = actix_web::web::block(move || work_blocking(work_req)).await??;
-    conn.transaction::<_, diesel::result::Error, _>(move |conn| {
+    let slug = conn.transaction::<_, diesel::result::Error, _>(move |conn| {
         // create new job
+        let slug = generate_uuid();
         let new_job = NewJob {
             creator_user_id: user_id,
-            slug: generate_uuid(),
+            slug: slug.clone(),
         };
         let job_ids: Vec<i32> = diesel::insert_into(crate::schema::jobs::table)
             .values(new_job)
@@ -98,9 +99,9 @@ async fn work(
                 .values(new_blocks)
                 .execute(conn)?;
         }
-        Ok(())
+        Ok(slug)
     })?;
-    Ok(())
+    Ok(slug)
 }
 
 #[post("/submit")]
@@ -133,6 +134,6 @@ pub async fn submit(
         }
     }
     info!("Got submission from {}", user_id);
-    work(conn, (*body).clone(), user_id).await.map_err(err)?;
-    return Ok(HttpResponse::Ok().json(true));
+    let slug = work(conn, (*body).clone(), user_id).await.map_err(err)?;
+    return Ok(HttpResponse::Ok().json(slug));
 }
