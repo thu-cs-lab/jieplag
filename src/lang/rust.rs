@@ -49,6 +49,11 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
             }
             TokenTree::Punct(punct) => {
                 // kind: [6, ...]
+                // skip semicolon
+                if punct.as_char() == ';' {
+                    continue;
+                }
+
                 res.push(Token {
                     spelling: format!("{}", punct),
                     kind: 6 + punct.as_char() as u8 % 250,
@@ -105,8 +110,21 @@ mod tests {
         assert_eq!(tokens[5].line, 1);
         assert_eq!(tokens[5].column, 13);
 
-        assert_eq!(tokens[11].spelling, "}");
-        assert_eq!(tokens[11].line, 1);
-        assert_eq!(tokens[11].column, 40);
+        // semicolon is skipped
+        assert_eq!(tokens[10].spelling, "}");
+        assert_eq!(tokens[10].line, 1);
+        assert_eq!(tokens[10].column, 40);
+    }
+
+    #[test]
+    fn test_tokenize_comments() {
+        let code = "// test \nfn main() { println!(\"Hello, world!\"); }";
+        let tokens = tokenize_str(code).unwrap();
+
+        eprintln!("{:?}", tokens);
+
+        assert_eq!(tokens[0].spelling, "fn");
+        assert_eq!(tokens[0].line, 2);
+        assert_eq!(tokens[0].column, 1);
     }
 }
