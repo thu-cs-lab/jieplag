@@ -1,12 +1,13 @@
 use dotenv::dotenv;
-use jieplag::{
-    env::ENV,
-    lang::Language,
-    session::LoginRequest,
-    submit::{Submission, SubmitRequest},
-};
 use std::path::PathBuf;
 use structopt::StructOpt;
+
+use api::{
+    env::ENV,
+    def::{LoginRequest, SubmitRequest, Submission}
+};
+use core::lang::Language;
+
 
 #[derive(StructOpt)]
 struct Args {

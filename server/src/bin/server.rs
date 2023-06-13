@@ -10,15 +10,16 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
 use env_logger;
-use jieplag::{
-    env::ENV,
+use log::*;
+use ring::digest;
+
+use api::env::ENV;
+use server::{
     render::{render_job, render_match, render_match_frame},
     session::login,
     submit::submit,
-    DbConnection,
+    db::DbConnection,
 };
-use log::*;
-use ring::digest;
 
 pub const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!();
 

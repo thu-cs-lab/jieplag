@@ -1,7 +1,8 @@
-use diesel::prelude::*;
+use diesel::{Connection, RunQueryDsl};
 use dotenv::dotenv;
-use jieplag;
 use structopt::StructOpt;
+
+use api::env::ENV;
 
 #[derive(StructOpt)]
 struct Args {
@@ -18,24 +19,24 @@ struct Args {
 fn main() -> anyhow::Result<()> {
     let args = Args::from_args();
     dotenv().ok();
-    let url = jieplag::env::ENV.database_url.clone();
-    let mut conn = jieplag::DbConnection::establish(&url)?;
+    let url = ENV.database_url.clone();
+    let mut conn = server::db::DbConnection::establish(&url)?;
 
-    let (salt, hash) = jieplag::session::hash(&args.password)?;
-    let new_user = jieplag::models::NewUser {
+    let (salt, hash) = server::session::hash(&args.password)?;
+    let new_user = server::models::NewUser {
         user_name: args.user_name,
         salt: Vec::from(salt),
         password: Vec::from(hash),
     };
     if args.force {
-        diesel::insert_into(jieplag::schema::users::table)
+        diesel::insert_into(server::schema::users::table)
             .values(&new_user)
-            .on_conflict(jieplag::schema::users::user_name)
+            .on_conflict(server::schema::users::user_name)
             .do_update()
             .set(&new_user)
             .execute(&mut conn)?;
     } else {
-        diesel::insert_into(jieplag::schema::users::table)
+        diesel::insert_into(server::schema::users::table)
             .values(&new_user)
             .execute(&mut conn)?;
     }

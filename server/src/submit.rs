@@ -1,12 +1,16 @@
 use crate::{
     common::{err, generate_uuid},
-    env::ENV,
-    lang::Language,
     models::{NewBlock, NewJob, NewMatch, NewSubmission, User},
-    session::{verify, LoginRequest},
+    session::verify,
     work::work_blocking,
-    DbConnection, DbPool,
+    db::DbConnection, db::DbPool,
 };
+
+use api::{
+    env::ENV,
+    def::SubmitRequest
+};
+
 use actix_session::Session;
 use actix_web::{post, web, HttpResponse, Result};
 use diesel::{
@@ -14,21 +18,7 @@ use diesel::{
     r2d2::{ConnectionManager, PooledConnection},
 };
 use log::*;
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Submission {
-    pub name: String,
-    pub code: String,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct SubmitRequest {
-    pub login: Option<LoginRequest>,
-    pub language: Language,
-    pub template: Option<String>,
-    pub submissions: Vec<Submission>,
-}
 
 async fn work(
     mut conn: PooledConnection<ConnectionManager<DbConnection>>,

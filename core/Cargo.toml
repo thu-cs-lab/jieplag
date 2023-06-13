@@ -1,0 +1,25 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+anyhow = "1.0.65"
+bitvec = "1.0.1"
+clang = "2.0.0"
+regex = "1.6.0"
+rkr-gst = "0.1.1"
+tempfile = "3.3.0"
+walkdir = "2.3.2"
+structopt = "0.3.26"
+serde = { version = "1.0.144", features = ["derive"] }
+rustpython-parser = "0.1.2"
+proc-macro2 = { version = "1.0.43", features = ["span-locations"] }
+verilog-lang = { git = "https://github.com/jiegec/verilog-lang" }
+env_logger = "0.9.0"
+log = "0.4.17"
+adler32 = "1.2.0"
+html-escape = "0.2.11"

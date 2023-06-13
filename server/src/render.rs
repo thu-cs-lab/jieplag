@@ -1,8 +1,9 @@
 use crate::{
-    common::{err, gen_svg},
+    common::err,
     models::{Block, Job, Match, Submission},
-    DbPool,
+    db::DbPool,
 };
+use core::common::gen_svg;
 use actix_web::{get, http::header, web, HttpResponse, Result};
 use diesel::prelude::*;
 

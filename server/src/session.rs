@@ -1,4 +1,6 @@
-use crate::{common::err, models::User, DbPool};
+use crate::{common::err, models::User, db::DbPool};
+use api::def::LoginRequest;
+
 use actix_session::Session;
 use actix_web::{post, web, HttpResponse, Result};
 use anyhow::anyhow;
@@ -8,7 +10,6 @@ use ring::{
     digest, pbkdf2,
     rand::{self, SecureRandom},
 };
-use serde::{Deserialize, Serialize};
 use std::num::NonZeroU32;
 
 const CREDENTIAL_LEN: usize = digest::SHA512_OUTPUT_LEN;
@@ -52,12 +53,6 @@ mod tests {
         assert!(verify(&salt, password, &hash));
         assert!(!verify(&salt, "testtest2", &hash));
     }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct LoginRequest {
-    pub user_name: String,
-    pub password: String,
 }
 
 #[post("/login")]

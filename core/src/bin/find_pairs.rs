@@ -1,4 +1,4 @@
-use jieplag::{
+use core::{
     common::{all_fingerprint, fingerprint, Fingerprint},
     token::Token,
 };
@@ -42,7 +42,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
         if include {
-            match jieplag::lang::tokenize(&path) {
+            match core::lang::tokenize(&path) {
                 Ok(tokens) => {
                     /*
                     println!("{}:", path.display());
@@ -83,7 +83,7 @@ fn main() -> anyhow::Result<()> {
                 }
             }
             if include {
-                match jieplag::lang::tokenize(&path) {
+                match core::lang::tokenize(&path) {
                     Ok(tokens) => {
                         all_tokens
                             .entry(relative_path.to_path_buf())

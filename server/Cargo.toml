@@ -1,0 +1,32 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["Jiajie Chen <c@jia.je>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+core = { path = "../core" }
+api = { path = "../api" }
+
+actix = "0.13.0"
+actix-http = "3.2.2"
+actix-web = "4.2.1"
+actix-cors = "0.6.2"
+actix-rt = "2.7.0"
+actix-session = { version = "0.7.2", features = ["cookie-session"] }
+diesel = { version = "2.0.0", features = ["postgres", "r2d2", "chrono"] }
+diesel_migrations = "2.0.0"
+log = "0.4.17"
+anyhow = "1.0.65"
+html-escape = "0.2.11"
+serde = { version = "1.0.144", features = ["derive"] }
+reqwest = { version = "0.11.11", features = ["blocking", "json"] }
+ring = "0.16.20"
+uuid = { version = "1.1.2", features = ["v4"] }
+clang = "2.0.0"
+structopt = "0.3.26"
+env_logger = "0.9.0"
+dotenv = "0.15.0"
