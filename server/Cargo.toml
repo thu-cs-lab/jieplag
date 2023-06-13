@@ -28,5 +28,5 @@ ring = "0.16.20"
 uuid = { version = "1.1.2", features = ["v4"] }
 clang = "2.0.0"
 structopt = "0.3.26"
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 dotenv = "0.15.0"

@@ -7,12 +7,13 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
     Ok(tokenize_str(&std::fs::read_to_string(path)?)?)
 }
 
+#[warn(non_snake_case)]
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let tokens = make_tokenizer(content);
     let mut res = vec![];
     for item in tokens {
         let (start, token, _end) =
-            item.map_err(|err| anyhow!("{} at {}", err.error, err.location))?;
+            item.map_err(|err| anyhow!("{} at {:?}", err.error, err.location))?;
         let kind = match &token {
             Name { name: _ } => 0,
             Int { value: _ } => 1,
@@ -20,15 +21,16 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             Complex { real: _, imag: _ } => 3,
             String {
                 value: _,
-                is_fstring: _,
+                kind: _,
+                triple_quoted: _
             } => 4,
-            Bytes { value: _ } => 5,
             // skip newline
+            Comment(_) => 5,
             Newline => continue, // 6
             Indent => 7,
             Dedent => 8,
-            StartProgram => 9,
-            StartStatement => 10,
+            StartModule => 9,
+            StartInteractive => 10,
             StartExpression => 11,
             EndOfFile => 12,
             Lpar => 13,

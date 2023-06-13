@@ -16,10 +16,10 @@ tempfile = "3.3.0"
 walkdir = "2.3.2"
 structopt = "0.3.26"
 serde = { version = "1.0.144", features = ["derive"] }
-rustpython-parser = "0.1.2"
+rustpython-parser = "0.2.0"
 proc-macro2 = { version = "1.0.43", features = ["span-locations"] }
 verilog-lang = { git = "https://github.com/jiegec/verilog-lang" }
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 log = "0.4.17"
 adler32 = "1.2.0"
 html-escape = "0.2.11"
