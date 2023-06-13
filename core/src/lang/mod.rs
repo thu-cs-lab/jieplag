@@ -20,20 +20,17 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
     let extension = path
         .extension()
         .and_then(|s| s.to_str())
-        .unwrap_or_default();
-    if extension == "cpp" {
-        cpp::tokenize(path)
-    } else if extension == "rs" {
-        rust::tokenize(path)
-    } else if extension == "v" {
-        verilog::tokenize(path)
-    } else if extension == "py" {
-        python::tokenize(path)
-    } else {
-        Err(anyhow!(
+        .unwrap_or_default().to_ascii_lowercase();
+
+    match extension.as_str() {
+        "cpp" | "cc" | "cxx" | "c++" | "c" | "cu" => cpp::tokenize(path), // C, C++ or CUDA
+        "rs" => rust::tokenize(path),
+        "v" => verilog::tokenize(path),
+        "py" => python::tokenize(path),
+        _ => Err(anyhow!(
             "Unsupported file extension: {:?}",
-            path.extension()
-        ))
+            path
+        )),
     }
 }
 
