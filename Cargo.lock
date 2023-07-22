@@ -632,6 +632,7 @@ dependencies = [
  "env_logger",
  "reqwest",
  "structopt",
+ "walkdir",
 ]
 
 [[package]]

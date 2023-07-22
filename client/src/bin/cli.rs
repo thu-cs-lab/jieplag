@@ -1,13 +1,12 @@
-use dotenv::dotenv;
-use std::path::PathBuf;
-use structopt::StructOpt;
-
 use api::{
+    def::{LoginRequest, Submission, SubmitRequest},
     env::ENV,
-    def::{LoginRequest, SubmitRequest, Submission}
 };
 use core::lang::Language;
-
+use dotenv::dotenv;
+use std::{ffi::OsString, path::PathBuf};
+use structopt::StructOpt;
+use walkdir::WalkDir;
 
 #[derive(StructOpt)]
 struct Args {
@@ -36,6 +35,26 @@ fn main() -> anyhow::Result<()> {
     let opts = Args::from_args();
     env_logger::init();
 
+    let language = match opts.language.as_str() {
+        "c++" | "cpp" | "cc" => Language::Cpp,
+        "rust" => Language::Rust,
+        _ => unimplemented!("Language: {}", opts.language),
+    };
+
+    let extensions = match &language {
+        Language::Cpp => ["cpp", "h"].to_vec(),
+        Language::Rust => ["rs"].to_vec(),
+        Language::Python => ["py"].to_vec(),
+        Language::Verilog => ["v"].to_vec(),
+    };
+
+    let comment = match &language {
+        Language::Cpp => "//",
+        Language::Rust => "//",
+        Language::Python => "#",
+        Language::Verilog => "//",
+    };
+
     let client = reqwest::blocking::Client::new();
     let body = client
         .post(format!("{}/api/submit", ENV.public_url))
@@ -44,18 +63,36 @@ fn main() -> anyhow::Result<()> {
                 user_name: opts.user_name,
                 password: opts.password,
             }),
-            language: match opts.language.as_str() {
-                "c++" | "cpp" | "cc" => Language::Cpp,
-                "rust" => Language::Rust,
-                _ => unimplemented!("Language: {}", opts.language),
-            },
+            language,
             template: Some(std::fs::read_to_string(&opts.template)?),
             submissions: opts
                 .code
                 .iter()
-                .map(|code| Submission {
-                    name: format!("{}", code.display()),
-                    code: std::fs::read_to_string(&code).unwrap(),
+                .map(|code| {
+                    if std::path::Path::new(code).is_file() {
+                        // one file
+                        Submission {
+                            name: format!("{}", code.display()),
+                            code: std::fs::read_to_string(&code).unwrap(),
+                        }
+                    } else {
+                        // find all sources and concat
+                        let mut source_code = String::new();
+                        for entry in WalkDir::new(code).into_iter().filter_map(|e| e.ok()) {
+                            for ext in &extensions {
+                                if entry.path().extension() == Some(&OsString::from(ext)) {
+                                    source_code +=
+                                        &format!("{} {} \n", comment, entry.path().display());
+                                    source_code += &std::fs::read_to_string(&entry.path()).unwrap();
+                                    break;
+                                }
+                            }
+                        }
+                        Submission {
+                            name: format!("{}", code.display()),
+                            code: source_code,
+                        }
+                    }
                 })
                 .collect::<Vec<_>>(),
         })
