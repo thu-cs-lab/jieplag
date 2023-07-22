@@ -15,10 +15,10 @@ use ring::digest;
 
 use api::env::ENV;
 use server::{
+    db::DbConnection,
     render::{render_job, render_match, render_match_frame},
     session::login,
     submit::submit,
-    db::DbConnection,
 };
 
 pub const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!();

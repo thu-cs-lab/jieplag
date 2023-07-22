@@ -1,4 +1,4 @@
-use crate::{common::err, models::User, db::DbPool};
+use crate::{common::err, db::DbPool, models::User};
 use api::def::LoginRequest;
 
 use actix_session::Session;

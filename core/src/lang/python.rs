@@ -22,7 +22,7 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             String {
                 value: _,
                 kind: _,
-                triple_quoted: _
+                triple_quoted: _,
             } => 4,
             // skip newline
             Comment(_) => 5,

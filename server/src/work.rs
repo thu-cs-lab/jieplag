@@ -1,9 +1,9 @@
-use core::{
-    common::{Fingerprint, fingerprint, all_fingerprint},
-    lang::tokenize_str,
-    matching::{Block, compute_matching_blocks_from_text}
-};
 use api::def::SubmitRequest;
+use core::{
+    common::{all_fingerprint, fingerprint, Fingerprint},
+    lang::tokenize_str,
+    matching::{compute_matching_blocks_from_text, Block},
+};
 
 use log::*;
 use std::collections::HashMap;

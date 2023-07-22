@@ -1,15 +1,13 @@
 use crate::{
     common::{err, generate_uuid},
+    db::DbConnection,
+    db::DbPool,
     models::{NewBlock, NewJob, NewMatch, NewSubmission, User},
     session::verify,
     work::work_blocking,
-    db::DbConnection, db::DbPool,
 };
 
-use api::{
-    env::ENV,
-    def::SubmitRequest
-};
+use api::{def::SubmitRequest, env::ENV};
 
 use actix_session::Session;
 use actix_web::{post, web, HttpResponse, Result};
@@ -18,7 +16,6 @@ use diesel::{
     r2d2::{ConnectionManager, PooledConnection},
 };
 use log::*;
-
 
 async fn work(
     mut conn: PooledConnection<ConnectionManager<DbConnection>>,

@@ -1,8 +1,8 @@
 use actix_web::{error::ErrorInternalServerError, Error};
 use anyhow::anyhow;
 use log::*;
-use uuid::Uuid;
 use std::fmt::Display;
+use uuid::Uuid;
 
 pub fn generate_uuid() -> String {
     let uuid = Uuid::new_v4();

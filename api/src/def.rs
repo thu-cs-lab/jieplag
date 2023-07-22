@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use core::lang::Language;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LoginRequest {

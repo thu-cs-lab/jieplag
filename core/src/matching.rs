@@ -5,7 +5,6 @@ use bitvec::bitvec;
 use log::*;
 use rkr_gst::Match;
 
-
 pub fn compute_matches_from_token(
     token_left: &[Token],
     token_kind_left: &[u8],
@@ -15,7 +14,6 @@ pub fn compute_matches_from_token(
     lines_right: &[&str],
     template_kind: Option<&[u8]>,
 ) -> Vec<Match> {
-
     let initial_search_length = 40;
     let minimum_match_length = 20;
     let mut matches = rkr_gst::run(
@@ -26,7 +24,6 @@ pub fn compute_matches_from_token(
     );
 
     if let Some(token_kind_template) = template_kind {
-
         let left_template_matches = rkr_gst::run(
             &token_kind_left,
             &token_kind_template,
@@ -124,7 +121,6 @@ pub fn compute_matches_from_token(
     matches
 }
 
-
 pub struct Block {
     // 0-based
     pub left_line_from: usize,
@@ -132,7 +128,6 @@ pub struct Block {
     pub right_line_from: usize,
     pub right_line_to: usize,
 }
-
 
 /// Compute matching blocks via RKR-GST algorithm
 pub fn compute_matching_blocks_from_text(

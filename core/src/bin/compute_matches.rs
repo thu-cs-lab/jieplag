@@ -1,8 +1,4 @@
-use core::{
-    common::gen_svg,
-    lang::tokenize,
-    matching::compute_matches_from_token,
-};
+use core::{common::gen_svg, lang::tokenize, matching::compute_matches_from_token};
 use rkr_gst::Match;
 use std::{
     fs::File,
@@ -56,7 +52,10 @@ fn main() -> anyhow::Result<()> {
         &lines_left.iter().map(|l| l.as_str()).collect::<Vec<&str>>(),
         &token_right,
         &token_kind_right,
-        &lines_right.iter().map(|l| l.as_str()).collect::<Vec<&str>>(),
+        &lines_right
+            .iter()
+            .map(|l| l.as_str())
+            .collect::<Vec<&str>>(),
         template_kind.as_ref().map(|v| v.as_slice()),
     );
 

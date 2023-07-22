@@ -1,10 +1,10 @@
 use crate::{
     common::err,
-    models::{Block, Job, Match, Submission},
     db::DbPool,
+    models::{Block, Job, Match, Submission},
 };
-use core::common::gen_svg;
 use actix_web::{get, http::header, web, HttpResponse, Result};
+use core::common::gen_svg;
 use diesel::prelude::*;
 
 #[get("/results/{slug}/{match_id}/{frame}")]
