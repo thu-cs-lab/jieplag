@@ -5,10 +5,18 @@ use std::{path::Path, str::FromStr};
 
 fn flatten(token_stream: TokenStream) -> Vec<Token> {
     let mut res = vec![];
+    // https://doc.rust-lang.org/reference/keywords.html
+    let keywords = [
+        "abstract", "as", "async", "await", "become", "box", "break", "const", "continue", "crate",
+        "do", "dyn", "else", "enum", "extern", "false", "final", "fn", "for", "if", "impl", "in",
+        "let", "loop", "macro", "match", "mod", "move", "mut", "override", "priv", "pub", "ref",
+        "return", "Self", "self", "static", "struct", "super", "trait", "true", "try", "type",
+        "typeof", "unsafe", "unsized", "use", "virtual", "where", "while", "yield",
+    ];
     for tokens in token_stream {
         match tokens {
             TokenTree::Group(group) => {
-                // kind: [0, 3]
+                // kind: [0, 2]
                 let spelling = match group.delimiter() {
                     Delimiter::Parenthesis => ("(", ")"),
                     Delimiter::Brace => ("{", "}"),
@@ -29,26 +37,36 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
                     column: group.span_close().start().column as u32 + 1,
                 });
             }
-            TokenTree::Ident(ident) => {
-                // kind: 4
-                res.push(Token {
-                    spelling: format!("{}", ident),
-                    kind: 4,
-                    line: ident.span().start().line as u32,
-                    column: ident.span().start().column as u32 + 1,
-                });
-            }
             TokenTree::Literal(literal) => {
-                // kind: 5
+                // kind: 3
                 res.push(Token {
                     spelling: format!("{}", literal),
-                    kind: 5,
+                    kind: 3,
                     line: literal.span().start().line as u32,
                     column: literal.span().start().column as u32 + 1,
                 });
             }
+            TokenTree::Ident(ident) => {
+                // kind: [4, 4+keywords.len()]
+                let spelling = format!("{}", ident);
+                if let Some(i) = keywords.iter().position(|s| s == &&spelling) {
+                    res.push(Token {
+                        spelling: format!("{}", ident),
+                        kind: 5 + i as u8,
+                        line: ident.span().start().line as u32,
+                        column: ident.span().start().column as u32 + 1,
+                    });
+                } else {
+                    res.push(Token {
+                        spelling: format!("{}", ident),
+                        kind: 4,
+                        line: ident.span().start().line as u32,
+                        column: ident.span().start().column as u32 + 1,
+                    });
+                }
+            }
             TokenTree::Punct(punct) => {
-                // kind: [6, ...]
+                // kind: [5+keywords.len(), ...]
                 // skip semicolon
                 if punct.as_char() == ';' {
                     continue;
@@ -56,7 +74,9 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
 
                 res.push(Token {
                     spelling: format!("{}", punct),
-                    kind: 6 + punct.as_char() as u8 % 250,
+                    kind: 5
+                        + keywords.len() as u8
+                        + (punct.as_char() as u8) % (251 - keywords.len() as u8),
                     line: punct.span().start().line as u32,
                     column: punct.span().start().column as u32 + 1,
                 });
