@@ -123,7 +123,7 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             kind,
             spelling: format!("{}", token),
             line: start.row() as u32,
-            column: start.column() as u32,
+            column: start.column() as u32 + 1,
         });
     }
     Ok(res)
@@ -142,18 +142,18 @@ mod tests {
 
         assert_eq!(tokens[0].spelling, "'a'");
         assert_eq!(tokens[0].line, 1);
-        assert_eq!(tokens[0].column, 0);
+        assert_eq!(tokens[0].column, 1);
 
         assert_eq!(tokens[1].spelling, "'='");
         assert_eq!(tokens[1].line, 1);
-        assert_eq!(tokens[1].column, 2);
+        assert_eq!(tokens[1].column, 3);
 
         assert_eq!(tokens[2].spelling, "'input'");
         assert_eq!(tokens[2].line, 1);
-        assert_eq!(tokens[2].column, 4);
+        assert_eq!(tokens[2].column, 5);
 
         assert_eq!(tokens[13].spelling, "'+'");
         assert_eq!(tokens[13].line, 3);
-        assert_eq!(tokens[13].column, 7);
+        assert_eq!(tokens[13].column, 8);
     }
 }
