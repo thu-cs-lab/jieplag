@@ -24,7 +24,7 @@ struct Args {
 
     /// Path to template file
     #[structopt(short = "b", long)]
-    template: PathBuf,
+    template: Option<PathBuf>,
 
     /// Paths to source code
     code: Vec<PathBuf>,
@@ -37,6 +37,7 @@ fn main() -> anyhow::Result<()> {
 
     let language = match opts.language.as_str() {
         "c++" | "cpp" | "cc" => Language::Cpp,
+        "python" | "py" => Language::Python,
         "rust" => Language::Rust,
         _ => unimplemented!("Language: {}", opts.language),
     };
@@ -56,6 +57,10 @@ fn main() -> anyhow::Result<()> {
     };
 
     let client = reqwest::blocking::Client::new();
+    let template = match &opts.template {
+        Some(template) => Some(std::fs::read_to_string(template)?),
+        None => None,
+    };
     let body = client
         .post(format!("{}/api/submit", ENV.public_url))
         .json(&SubmitRequest {
@@ -64,7 +69,7 @@ fn main() -> anyhow::Result<()> {
                 password: opts.password,
             }),
             language,
-            template: Some(std::fs::read_to_string(&opts.template)?),
+            template,
             submissions: opts
                 .code
                 .iter()
