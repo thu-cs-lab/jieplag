@@ -37,6 +37,6 @@ pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Tok
         Language::Cpp => cpp::tokenize_str(content),
         Language::Rust => rust::tokenize_str(content),
         Language::Verilog => verilog::tokenize_str(content),
-        Language::Python => verilog::tokenize_str(content),
+        Language::Python => python::tokenize_str(content),
     }
 }
