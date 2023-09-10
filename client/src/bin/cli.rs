@@ -4,7 +4,7 @@ use api::{
 };
 use core::lang::Language;
 use dotenv::dotenv;
-use std::{ffi::OsString, path::PathBuf};
+use std::{ffi::OsString, path::PathBuf, path::Path};
 use structopt::StructOpt;
 use walkdir::WalkDir;
 
@@ -30,6 +30,40 @@ struct Args {
     code: Vec<PathBuf>,
 }
 
+fn collect(language: &Language, path: &Path) -> String {
+    let comment = match &language {
+        Language::Cpp => "//",
+        Language::Rust => "//",
+        Language::Python => "#",
+        Language::Verilog => "//",
+    };
+    let extensions = match &language {
+        Language::Cpp => ["cpp", "h"].to_vec(),
+        Language::Rust => ["rs"].to_vec(),
+        Language::Python => ["py"].to_vec(),
+        Language::Verilog => ["v"].to_vec(),
+    };
+
+
+    if std::path::Path::new(path).is_file() {
+        // one file
+        std::fs::read_to_string(&path).unwrap()
+    } else {
+        // find all sources and concat
+        let mut source_code = String::new();
+        for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
+            for ext in &extensions {
+                if entry.path().extension() == Some(&OsString::from(ext)) {
+                    source_code += &format!("{} {} \n", comment, entry.path().display());
+                    source_code += &std::fs::read_to_string(&entry.path()).unwrap();
+                    break;
+                }
+            }
+        }
+        source_code
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     dotenv().ok();
     let opts = Args::from_args();
@@ -42,23 +76,9 @@ fn main() -> anyhow::Result<()> {
         _ => unimplemented!("Language: {}", opts.language),
     };
 
-    let extensions = match &language {
-        Language::Cpp => ["cpp", "h"].to_vec(),
-        Language::Rust => ["rs"].to_vec(),
-        Language::Python => ["py"].to_vec(),
-        Language::Verilog => ["v"].to_vec(),
-    };
-
-    let comment = match &language {
-        Language::Cpp => "//",
-        Language::Rust => "//",
-        Language::Python => "#",
-        Language::Verilog => "//",
-    };
-
     let client = reqwest::blocking::Client::new();
     let template = match &opts.template {
-        Some(template) => Some(std::fs::read_to_string(template)?),
+        Some(template) => Some(collect(&language, template)),
         None => None,
     };
     let body = client
@@ -73,31 +93,9 @@ fn main() -> anyhow::Result<()> {
             submissions: opts
                 .code
                 .iter()
-                .map(|code| {
-                    if std::path::Path::new(code).is_file() {
-                        // one file
-                        Submission {
-                            name: format!("{}", code.display()),
-                            code: std::fs::read_to_string(&code).unwrap(),
-                        }
-                    } else {
-                        // find all sources and concat
-                        let mut source_code = String::new();
-                        for entry in WalkDir::new(code).into_iter().filter_map(|e| e.ok()) {
-                            for ext in &extensions {
-                                if entry.path().extension() == Some(&OsString::from(ext)) {
-                                    source_code +=
-                                        &format!("{} {} \n", comment, entry.path().display());
-                                    source_code += &std::fs::read_to_string(&entry.path()).unwrap();
-                                    break;
-                                }
-                            }
-                        }
-                        Submission {
-                            name: format!("{}", code.display()),
-                            code: source_code,
-                        }
-                    }
+                .map(|code| Submission {
+                    name: format!("{}", code.display()),
+                    code: collect(&language, code),
                 })
                 .collect::<Vec<_>>(),
         })
