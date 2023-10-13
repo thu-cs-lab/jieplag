@@ -2,7 +2,6 @@ use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use sqlparser::{dialect::GenericDialect, tokenizer::Token::*, tokenizer::Tokenizer};
 
-
 pub struct SQL;
 
 impl AnalyzableLang for SQL {

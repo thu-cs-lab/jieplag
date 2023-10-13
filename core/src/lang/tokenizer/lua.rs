@@ -3,7 +3,6 @@ use crate::token::Token;
 use full_moon::tokenizer::tokens;
 use full_moon::tokenizer::TokenKind::*;
 
-
 pub struct Lua;
 
 impl AnalyzableLang for Lua {

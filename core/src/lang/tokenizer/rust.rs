@@ -4,7 +4,6 @@ use anyhow::anyhow;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use std::str::FromStr;
 
-
 pub struct Rust;
 
 impl AnalyzableLang for Rust {
@@ -12,7 +11,6 @@ impl AnalyzableLang for Rust {
         tokenize_str(content)
     }
 }
-
 
 fn flatten(token_stream: TokenStream) -> Vec<Token> {
     let mut res = vec![];

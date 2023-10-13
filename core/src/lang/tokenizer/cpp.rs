@@ -8,7 +8,6 @@ use std::{
 };
 use tempfile::tempdir;
 
-
 pub struct Cpp;
 
 impl AnalyzableLang for Cpp {

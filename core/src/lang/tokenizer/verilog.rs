@@ -2,7 +2,6 @@ use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use verilog_lang::lexer::Lexer;
 
-
 pub struct Verilog;
 
 impl AnalyzableLang for Verilog {

@@ -5,7 +5,6 @@ use boa_parser::lexer::token::TokenKind::*;
 use boa_parser::Lexer;
 use std::io::Cursor;
 
-
 pub struct JavaScript;
 
 impl AnalyzableLang for JavaScript {

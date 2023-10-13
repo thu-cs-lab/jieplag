@@ -33,56 +33,41 @@ fn get_lang_info() -> Vec<LangInfo> {
     vec![
         LangInfo {
             name: Language::Cpp,
-            supported_extensions: vec![
-                "cpp", "cc", "cxx", "c++", "c", "cu"
-            ],
+            supported_extensions: vec!["cpp", "cc", "cxx", "c++", "c", "cu"],
             tokenizer: Box::new(tokenizer::cpp::Cpp),
         },
         LangInfo {
             name: Language::Rust,
-            supported_extensions: vec![
-                "rs"
-            ],
+            supported_extensions: vec!["rs"],
             tokenizer: Box::new(tokenizer::rust::Rust),
         },
         LangInfo {
             name: Language::Verilog,
-            supported_extensions: vec![
-                "v"
-            ],
+            supported_extensions: vec!["v"],
             tokenizer: Box::new(tokenizer::verilog::Verilog),
         },
         LangInfo {
             name: Language::Python,
-            supported_extensions: vec![
-                "py"
-            ],
+            supported_extensions: vec!["py"],
             tokenizer: Box::new(tokenizer::python::Python),
         },
         LangInfo {
             name: Language::SQL,
-            supported_extensions: vec![
-                "sql"
-            ],
+            supported_extensions: vec!["sql"],
             tokenizer: Box::new(tokenizer::sql::SQL),
         },
         LangInfo {
             name: Language::JavaScript,
-            supported_extensions: vec![
-                "js"
-            ],
+            supported_extensions: vec!["js"],
             tokenizer: Box::new(tokenizer::javascript::JavaScript),
         },
         LangInfo {
             name: Language::Lua,
-            supported_extensions: vec![
-                "lua"
-            ],
+            supported_extensions: vec!["lua"],
             tokenizer: Box::new(tokenizer::lua::Lua),
         },
     ]
 }
-
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
     let extension = path
@@ -98,7 +83,6 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
     }
     return Err(anyhow!("Unsupported file extension: {:?}", path));
 }
-
 
 pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Token>> {
     for lang in get_lang_info() {

@@ -6,7 +6,6 @@ use rustpython_parser::source_code::LineIndex;
 use rustpython_parser::Mode;
 use rustpython_parser::Tok::*;
 
-
 pub struct Python;
 
 impl AnalyzableLang for Python {
