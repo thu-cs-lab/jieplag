@@ -1,7 +1,18 @@
+use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use anyhow::anyhow;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
-use std::{path::Path, str::FromStr};
+use std::str::FromStr;
+
+
+pub struct Rust;
+
+impl AnalyzableLang for Rust {
+    fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
+        tokenize_str(content)
+    }
+}
+
 
 fn flatten(token_stream: TokenStream) -> Vec<Token> {
     let mut res = vec![];
@@ -84,10 +95,6 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
         }
     }
     res
-}
-
-pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    tokenize_str(&std::fs::read_to_string(path)?)
 }
 
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {

@@ -1,13 +1,18 @@
+use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use anyhow::anyhow;
 use rustpython_parser::lexer::lex;
 use rustpython_parser::source_code::LineIndex;
 use rustpython_parser::Mode;
 use rustpython_parser::Tok::*;
-use std::path::Path;
 
-pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    tokenize_str(&std::fs::read_to_string(path)?)
+
+pub struct Python;
+
+impl AnalyzableLang for Python {
+    fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
+        tokenize_str(content)
+    }
 }
 
 #[warn(non_snake_case)]

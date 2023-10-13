@@ -1,13 +1,18 @@
+use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use full_moon::tokenizer::tokens;
 use full_moon::tokenizer::TokenKind::*;
-use std::path::Path;
 
-pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    tokenize_str(&std::fs::read_to_string(path)?)
+
+pub struct Lua;
+
+impl AnalyzableLang for Lua {
+    fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
+        tokenize_str(content)
+    }
 }
 
-pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
+fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let mut res = vec![];
     for token in tokens(content)? {
         let kind = match token.token_kind() {

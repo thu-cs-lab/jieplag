@@ -1,3 +1,4 @@
+use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use anyhow::anyhow;
 use clang::token::TokenKind;
@@ -7,7 +8,20 @@ use std::{
 };
 use tempfile::tempdir;
 
-pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
+
+pub struct Cpp;
+
+impl AnalyzableLang for Cpp {
+    fn tokenize(&self, path: &Path) -> anyhow::Result<Vec<Token>> {
+        tokenize(path)
+    }
+
+    fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
+        tokenize_str(content)
+    }
+}
+
+fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
     let clang = clang::Clang::new().map_err(|err| anyhow!("{}", err))?;
     let index = clang::Index::new(&clang, true, false);
     let tu = index.parser(path).parse()?;
@@ -41,7 +55,7 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
     Ok(vector)
 }
 
-pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
+fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let dir = tempdir()?;
     let path = dir.path().join("code.cpp");
     std::fs::write(&path, content)?;

@@ -1,9 +1,14 @@
+use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use sqlparser::{dialect::GenericDialect, tokenizer::Token::*, tokenizer::Tokenizer};
-use std::path::Path;
 
-pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    tokenize_str(&std::fs::read_to_string(path)?)
+
+pub struct SQL;
+
+impl AnalyzableLang for SQL {
+    fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
+        tokenize_str(content)
+    }
 }
 
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {

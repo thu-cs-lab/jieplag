@@ -1,15 +1,20 @@
+use crate::lang::AnalyzableLang;
 use crate::token::Token;
 use boa_interner::Interner;
 use boa_parser::lexer::token::TokenKind::*;
 use boa_parser::Lexer;
 use std::io::Cursor;
-use std::path::Path;
 
-pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    tokenize_str(&std::fs::read_to_string(path)?)
+
+pub struct JavaScript;
+
+impl AnalyzableLang for JavaScript {
+    fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
+        tokenize_str(content)
+    }
 }
 
-pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
+fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let mut res = vec![];
     let mut lexer = Lexer::new(Cursor::new(content));
     let mut interner = Interner::new();
