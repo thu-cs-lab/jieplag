@@ -105,3 +105,9 @@ grant all privileges on database jieplag to jieplag;
 \c jieplag postgres
 grant all on schema public to jieplag;
 ```
+
+## Acknowledgements
+
+JiePlag is highly influenced by Stanford MOSS. Due to frequent outage of Stanford MOSS, we created JiePlag as a open source software clone. We re-implemented [winnow](https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf) algorithm and mimicked the web interface of Stanford MOSS.
+
+We highly thanked Stanford MOSS for their great contributions to the teaching comunity.
