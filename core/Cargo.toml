@@ -7,19 +7,19 @@ edition = "2021"
 
 [dependencies]
 
-anyhow = "1.0.65"
+anyhow = "1.0.75"
 bitvec = "1.0.1"
 clang = "2.0.0"
-regex = "1.6.0"
-rkr-gst = "0.1.1"
-tempfile = "3.3.0"
-walkdir = "2.3.2"
+regex = "1.10.0"
+rkr-gst = "0.1.2"
+tempfile = "3.8.0"
+walkdir = "2.4.0"
 structopt = "0.3.26"
-serde = { version = "1.0.144", features = ["derive"] }
-rustpython-parser = "0.2.0"
-proc-macro2 = { version = "1.0.43", features = ["span-locations"] }
+serde = { version = "1.0.189", features = ["derive"] }
+rustpython-parser = { version = "0.3.0", features = ["full-lexer"] }
+proc-macro2 = { version = "1.0.69", features = ["span-locations"] }
 verilog-lang = { git = "https://github.com/jiegec/verilog-lang" }
 env_logger = "0.10.0"
-log = "0.4.17"
+log = "0.4.20"
 adler32 = "1.2.0"
-html-escape = "0.2.11"
+html-escape = "0.2.13"

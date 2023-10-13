@@ -1,6 +1,8 @@
 use crate::token::Token;
 use anyhow::anyhow;
-use rustpython_parser::{lexer::make_tokenizer, token::Tok::*};
+use rustpython_parser::Tok::*;
+use rustpython_parser::Mode;
+use rustpython_parser::lexer::lex;
 use std::path::Path;
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
@@ -9,10 +11,10 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
 
 #[warn(non_snake_case)]
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
-    let tokens = make_tokenizer(content);
+    let tokens = lex(content, Mode::Module);
     let mut res = vec![];
     for item in tokens {
-        let (start, token, _end) =
+        let (token, range) =
             item.map_err(|err| anyhow!("{} at {:?}", err.error, err.location))?;
         let kind = match &token {
             Name { name: _ } => 0,
@@ -118,12 +120,16 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             While => 92,
             With => 93,
             Yield => 94,
+            Match => 95,
+            Type => 96,
+            Case => 97,
+            NonLogicalNewline => 98,
         };
         res.push(Token {
             kind,
             spelling: format!("{}", token),
-            line: start.row() as u32,
-            column: start.column() as u32 + 1,
+            line: 0, // FIXME: range.start() gives offset to file start, convert it to line & column offset needs UTF-8 parsing
+            column: 0,
         });
     }
     Ok(res)
