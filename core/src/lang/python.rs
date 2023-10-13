@@ -1,8 +1,9 @@
 use crate::token::Token;
 use anyhow::anyhow;
-use rustpython_parser::Tok::*;
-use rustpython_parser::Mode;
 use rustpython_parser::lexer::lex;
+use rustpython_parser::source_code::LineIndex;
+use rustpython_parser::Mode;
+use rustpython_parser::Tok::*;
 use std::path::Path;
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
@@ -14,8 +15,7 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let tokens = lex(content, Mode::Module);
     let mut res = vec![];
     for item in tokens {
-        let (token, range) =
-            item.map_err(|err| anyhow!("{} at {:?}", err.error, err.location))?;
+        let (token, range) = item.map_err(|err| anyhow!("{} at {:?}", err.error, err.location))?;
         let kind = match &token {
             Name { name: _ } => 0,
             Int { value: _ } => 1,
@@ -125,11 +125,13 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             Case => 97,
             NonLogicalNewline => 98,
         };
+        let line_index = LineIndex::from_source_text(content);
+        let location = line_index.source_location(range.start(), content);
         res.push(Token {
             kind,
             spelling: format!("{}", token),
-            line: 0, // FIXME: range.start() gives offset to file start, convert it to line & column offset needs UTF-8 parsing
-            column: 0,
+            line: location.row.get(),
+            column: location.column.get(),
         });
     }
     Ok(res)
