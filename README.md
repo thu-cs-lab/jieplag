@@ -87,6 +87,15 @@ Configuration: `server/.env.sample`.
 * `server/src/bin/server.rs`: Run web server to accept requests
 * `client/srv/bin/cli.rs`: CLI tool to submit to server
 
+After submission via CLI, a link will be generated to view in browser. An example webpage is provided at `examples/aplusb/html`, you can view it via:
+
+```shell
+cd examples/aplusb/html
+python3 -m http.server
+# in another shell
+open http://127.0.0.1:8000/
+```
+
 Setup postgres database in postgres shell:
 
 ```sql
