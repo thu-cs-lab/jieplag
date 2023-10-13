@@ -1,4 +1,4 @@
-use crate::lang::AnalyzableLang;
+use crate::lang::Tokenize;
 use crate::token::Token;
 use anyhow::anyhow;
 use rustpython_parser::lexer::lex;
@@ -8,7 +8,7 @@ use rustpython_parser::Tok::*;
 
 pub struct Python;
 
-impl AnalyzableLang for Python {
+impl Tokenize for Python {
     fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
         tokenize_str(content)
     }

@@ -1,10 +1,10 @@
-use crate::lang::AnalyzableLang;
+use crate::lang::Tokenize;
 use crate::token::Token;
 use verilog_lang::lexer::Lexer;
 
 pub struct Verilog;
 
-impl AnalyzableLang for Verilog {
+impl Tokenize for Verilog {
     fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
         tokenize_str(content)
     }

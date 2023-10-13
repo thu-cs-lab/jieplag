@@ -1,4 +1,4 @@
-use crate::lang::AnalyzableLang;
+use crate::lang::Tokenize;
 use crate::token::Token;
 use anyhow::anyhow;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 pub struct Rust;
 
-impl AnalyzableLang for Rust {
+impl Tokenize for Rust {
     fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
         tokenize_str(content)
     }

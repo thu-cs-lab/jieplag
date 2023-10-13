@@ -1,4 +1,4 @@
-use crate::lang::AnalyzableLang;
+use crate::lang::Tokenize;
 use crate::token::Token;
 use boa_interner::Interner;
 use boa_parser::lexer::token::TokenKind::*;
@@ -7,7 +7,7 @@ use std::io::Cursor;
 
 pub struct JavaScript;
 
-impl AnalyzableLang for JavaScript {
+impl Tokenize for JavaScript {
     fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
         tokenize_str(content)
     }

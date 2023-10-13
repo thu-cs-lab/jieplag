@@ -1,4 +1,4 @@
-use crate::lang::AnalyzableLang;
+use crate::lang::Tokenize;
 use crate::token::Token;
 use anyhow::anyhow;
 use clang::token::TokenKind;
@@ -10,7 +10,7 @@ use tempfile::tempdir;
 
 pub struct Cpp;
 
-impl AnalyzableLang for Cpp {
+impl Tokenize for Cpp {
     fn tokenize(&self, path: &Path) -> anyhow::Result<Vec<Token>> {
         tokenize(path)
     }

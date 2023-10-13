@@ -1,10 +1,10 @@
-use crate::lang::AnalyzableLang;
+use crate::lang::Tokenize;
 use crate::token::Token;
 use sqlparser::{dialect::GenericDialect, tokenizer::Token::*, tokenizer::Tokenizer};
 
 pub struct SQL;
 
-impl AnalyzableLang for SQL {
+impl Tokenize for SQL {
     fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
         tokenize_str(content)
     }

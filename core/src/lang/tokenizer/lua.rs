@@ -1,11 +1,11 @@
-use crate::lang::AnalyzableLang;
+use crate::lang::Tokenize;
 use crate::token::Token;
 use full_moon::tokenizer::tokens;
 use full_moon::tokenizer::TokenKind::*;
 
 pub struct Lua;
 
-impl AnalyzableLang for Lua {
+impl Tokenize for Lua {
     fn tokenize_str(&self, content: &str) -> anyhow::Result<Vec<Token>> {
         tokenize_str(content)
     }
