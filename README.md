@@ -5,11 +5,78 @@
 * `core/src/bin/find_pairs.rs`: Find pairs of files that contain possible plagiarism
 * `core/src/bin/compute_matches.rs`: Compute matched text blocks from two source files (and optional teamplte file)
 
-Example:
+Example for `find_pairs`:
 
 ```shell
 $ RUST_LOG=info cargo run --bin find_pairs -- --source-directory examples/aplusb/students --template-directory examples/aplusb/template --include cpp
 Possible plagarism: examples/aplusb/students/student1 and examples/aplusb/students/student3: 3 matches
+```
+
+Example for `compute_matches`:
+
+```shell
+$ cargo run --bin compute_matches -- --left examples/aplusb/students/student1/main.cpp --right examples/aplusb/students/student3/main.cpp
+Match #1:
+L0-L14:
+#include <stdio.h>
+
+int aplusb(int a, int b) {
+  // implement aplusb
+  return a+b;
+}
+
+int main() {
+  // implement input/output
+  int a, b;
+  scanf("%d%d", &a, &b);
+  int c = aplusb(a, b);
+  printf("%d\n", c);
+  return 0;
+}
+Match #1:
+L0-L14:
+#include <stdio.h>
+
+int aplusb(int a, int b)
+{
+  return a + b;
+}
+
+int main()
+{
+  int a, b;
+  scanf("%d %d", &a, &b);
+  int c = aplusb(a, b);
+  printf("%d\n", c);
+  return 0;
+}
+$ cargo run --bin compute_matches -- --left examples/aplusb/students/student1/main.cpp --right examples/aplusb/students/student4/main.cpp
+Match #1:
+L4-L14:
+  return a+b;
+}
+
+int main() {
+  // implement input/output
+  int a, b;
+  scanf("%d%d", &a, &b);
+  int c = aplusb(a, b);
+  printf("%d\n", c);
+  return 0;
+}
+Match #1:
+L4-L14:
+  return a-b+b+b;
+}
+
+int main() {
+  // implement input/output
+  int a, b;
+  scanf("%d%d", &a, &b);
+  int c = aplusb(a, b);
+  printf("%d\n", c);
+  return 0;
+}
 ```
 
 ## Run server
