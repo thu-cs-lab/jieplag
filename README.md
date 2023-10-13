@@ -1,5 +1,12 @@
 # JiePlag
 
+JiePlag is a plagiarism checker for checking code similarity. It currently supports the following languages:
+
+1. C/C++
+2. Rust
+3. Python
+4. Verilog
+
 ## Local binaries
 
 * `core/src/bin/find_pairs.rs`: Find pairs of files that contain possible plagiarism
