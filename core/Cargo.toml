@@ -24,3 +24,6 @@ adler32 = "1.2.0"
 html-escape = "0.2.13"
 clap = { version = "4.4.6", features = ["derive"] }
 sqlparser = "0.38.0"
+boa_parser = "0.17.3"
+boa_interner = "0.17.3"
+boa_ast = "0.17.3"

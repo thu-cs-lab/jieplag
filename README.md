@@ -7,6 +7,7 @@ JiePlag is a plagiarism checker for checking code similarity. It currently suppo
 3. Python
 4. Verilog
 5. SQL
+6. JavaScript
 
 It supports standalone mode (see `Local binaries` section) and client-server mode (see `Run server` section).
 

@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 pub mod cpp;
+pub mod javascript;
 pub mod python;
 pub mod rust;
 pub mod sql;
@@ -16,6 +17,7 @@ pub enum Language {
     Verilog,
     Python,
     SQL,
+    JavaScript,
 }
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
@@ -31,6 +33,7 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
         "v" => verilog::tokenize(path),
         "py" => python::tokenize(path),
         "sql" => sql::tokenize(path),
+        "js" => javascript::tokenize(path),
         _ => Err(anyhow!("Unsupported file extension: {:?}", path)),
     }
 }
@@ -42,5 +45,6 @@ pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Tok
         Language::Verilog => verilog::tokenize_str(content),
         Language::Python => python::tokenize_str(content),
         Language::SQL => sql::tokenize_str(content),
+        Language::JavaScript => javascript::tokenize_str(content),
     }
 }
