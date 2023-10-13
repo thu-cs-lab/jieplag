@@ -38,6 +38,7 @@ fn collect(language: &Language, path: &Path) -> String {
         Language::Verilog => "//",
         Language::SQL => "--",
         Language::JavaScript => "//",
+        Language::Lua => "--",
     };
     let extensions = match &language {
         Language::Cpp => ["cpp", "h"].to_vec(),
@@ -46,6 +47,7 @@ fn collect(language: &Language, path: &Path) -> String {
         Language::Verilog => ["v"].to_vec(),
         Language::SQL => ["sql"].to_vec(),
         Language::JavaScript => ["js"].to_vec(),
+        Language::Lua => ["lua"].to_vec(),
     };
 
     if std::path::Path::new(path).is_file() {
