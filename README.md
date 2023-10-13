@@ -96,6 +96,14 @@ python3 -m http.server
 open http://127.0.0.1:8000/
 ```
 
+To setup jieplag server, the following steps are required:
+
+1. Setup postgresql database
+2. Copy `server/.env.sample` to `.env` and change the contents accordingly
+3. Build server and run it
+4. Use `create_user` to create new user
+5. Use `cli` to submit code to jieplag
+
 Setup postgres database in postgres shell:
 
 ```sql
@@ -104,6 +112,34 @@ create user jieplag with encrypted password 'REDACTED';
 grant all privileges on database jieplag to jieplag;
 \c jieplag postgres
 grant all on schema public to jieplag;
+```
+
+Copy `.env.sample` to `.env` and edit:
+
+```env
+DATABASE_URL=postgres://DB_USER_HERE:DB_PASSWORD_HERE@DB_HOSTNAME_HERE/jieplag
+COOKIE_SECRET=PUT_SOME_RANDOM_LONG_SECRET_HERE
+PUBLIC_URL=http://PUBLIC_HOSTNAME_HERE/SUBPATH_IS_SUPPORTED
+```
+
+Run server:
+
+```shell
+RUST_LOG=info cargo run --bin server
+```
+
+Please ensure you are running server under the same (or descendant) directory where `.env` is located, due to how `dotenv` works.
+
+Create user:
+
+```shell
+cargo run --bin create_user -- --user-name USER_NAME_HERE --password PASSWORD_NAME_HERE [--force]
+```
+
+Submit code:
+
+```shell
+cargo run --bin cli -- --language cc --user-name USER_NAME_HERE --password PASSWORD_HERE [--template PATH_TO_TEMPLATE_CODE] PATH_TO_STUDENT1_CODE PATH_TO_STUDENT2_CODE ...
 ```
 
 ## Acknowledgements
