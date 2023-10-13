@@ -5,6 +5,13 @@
 * `core/src/bin/find_pairs.rs`: Find pairs of files that contain possible plagiarism
 * `core/src/bin/compute_matches.rs`: Compute matched text blocks from two source files (and optional teamplte file)
 
+Example:
+
+```shell
+$ RUST_LOG=info cargo run --bin find_pairs -- --source-directory examples/aplusb/students --template-directory examples/aplusb/template --include cpp
+Possible plagarism: examples/aplusb/students/student1 and examples/aplusb/students/student3: 3 matches
+```
+
 ## Run server
 
 Configuration: `server/.env.sample`.

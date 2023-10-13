@@ -70,7 +70,7 @@ fn main() -> anyhow::Result<()> {
         if !submission.file_type()?.is_dir() {
             continue;
         }
-        let submission_directory = opts.source_directory.join(submission.path());
+        let submission_directory = submission.path();
         for entry in WalkDir::new(&submission_directory) {
             let entry = entry?;
             let path = entry.path();
@@ -116,7 +116,7 @@ fn main() -> anyhow::Result<()> {
         for i in 0..keys.len() {
             let token = all_tokens[submission][keys[i]].clone();
             let fingerprint = fingerprint(token.iter().map(|t| t.kind), 40, 80);
-            println!(
+            info!(
                 "{}: {} tokens, {} fingerprints",
                 keys[i].display(),
                 token.len(),
@@ -145,9 +145,9 @@ fn main() -> anyhow::Result<()> {
             }
 
             if v.len() > 5 {
-                println!("Found {} entries:", v.len());
+                info!("Found {} entries:", v.len());
                 for (f, i) in v {
-                    println!(
+                    info!(
                         "{} offset {} L{} C{}",
                         keys[*i].display(),
                         f.offset,
