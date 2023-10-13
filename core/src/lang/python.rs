@@ -14,6 +14,7 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let tokens = lex(content, Mode::Module);
     let mut res = vec![];
+    let line_index = LineIndex::from_source_text(content);
     for item in tokens {
         let (token, range) = item.map_err(|err| anyhow!("{} at {:?}", err.error, err.location))?;
         let kind = match &token {
@@ -125,7 +126,6 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             Case => 97,
             NonLogicalNewline => 98,
         };
-        let line_index = LineIndex::from_source_text(content);
         let location = line_index.source_location(range.start(), content);
         res.push(Token {
             kind,
