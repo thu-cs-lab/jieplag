@@ -23,3 +23,4 @@ log = "0.4.20"
 adler32 = "1.2.0"
 html-escape = "0.2.13"
 clap = { version = "4.4.6", features = ["derive"] }
+sqlparser = "0.38.0"

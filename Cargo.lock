@@ -732,6 +732,7 @@ dependencies = [
  "rkr-gst",
  "rustpython-parser",
  "serde",
+ "sqlparser",
  "tempfile",
  "verilog-lang",
  "walkdir",
@@ -2373,6 +2374,15 @@ name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
+
+[[package]]
+name = "sqlparser"
+version = "0.38.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0272b7bb0a225320170c99901b4b5fb3a4384e255a7f2cc228f61e2ba3893e75"
+dependencies = [
+ "log",
+]
 
 [[package]]
 name = "static_assertions"
