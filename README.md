@@ -7,6 +7,8 @@ JiePlag is a plagiarism checker for checking code similarity. It currently suppo
 3. Python
 4. Verilog
 
+It supports standalone mode (see `Local binaries` section) and client-server mode (see `Run server` section).
+
 ## Local binaries
 
 * `core/src/bin/find_pairs.rs`: Find pairs of files that contain possible plagiarism
