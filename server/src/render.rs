@@ -145,8 +145,7 @@ pub async fn render_match_frame(
             assert!(last_line <= line_from);
             assert!(line_from <= line_to);
             if last_line < line_from {
-                res += &html_escape::encode_text(&lines[last_line..=(line_from - 1)].join("\n"))
-                    .to_string();
+                res += &html_escape::encode_text(&lines[last_line..=(line_from - 1)].join("\n"));
                 res += "\n";
             }
             last_line = line_to + 1;
@@ -170,7 +169,7 @@ pub async fn render_match_frame(
 
         // the rest
         if last_line < lines.len() {
-            res += &html_escape::encode_text(&lines[last_line..].join("\n")).to_string();
+            res += &html_escape::encode_text(&lines[last_line..].join("\n"));
             res += "\n";
         }
 
@@ -183,8 +182,7 @@ pub async fn render_match_frame(
 
 #[get("/results/{slug}/{match_id}/")]
 pub async fn render_match(_path: web::Path<(String, i64)>) -> Result<HttpResponse> {
-    let res = format!(
-        r#"
+    let res = r#"
 <html>
 	<head>
 	</head>
@@ -199,7 +197,7 @@ pub async fn render_match(_path: web::Path<(String, i64)>) -> Result<HttpRespons
     </frameset>
 </html>
     "#
-    );
+    .to_string();
 
     return Ok(HttpResponse::Ok()
         .append_header(header::ContentType::html())

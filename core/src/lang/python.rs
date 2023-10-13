@@ -7,7 +7,7 @@ use rustpython_parser::Tok::*;
 use std::path::Path;
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    Ok(tokenize_str(&std::fs::read_to_string(path)?)?)
+    tokenize_str(&std::fs::read_to_string(path)?)
 }
 
 #[warn(non_snake_case)]

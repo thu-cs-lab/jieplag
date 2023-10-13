@@ -36,17 +36,19 @@ fn collect(language: &Language, path: &Path) -> String {
         Language::Rust => "//",
         Language::Python => "#",
         Language::Verilog => "//",
+        Language::SQL => "--",
     };
     let extensions = match &language {
         Language::Cpp => ["cpp", "h"].to_vec(),
         Language::Rust => ["rs"].to_vec(),
         Language::Python => ["py"].to_vec(),
         Language::Verilog => ["v"].to_vec(),
+        Language::SQL => ["sql"].to_vec(),
     };
 
     if std::path::Path::new(path).is_file() {
         // one file
-        std::fs::read_to_string(&path).unwrap()
+        std::fs::read_to_string(path).unwrap()
     } else {
         // find all sources and concat
         let mut source_code = String::new();
@@ -54,7 +56,7 @@ fn collect(language: &Language, path: &Path) -> String {
             for ext in &extensions {
                 if entry.path().extension() == Some(&OsString::from(ext)) {
                     source_code += &format!("{} {} \n", comment, entry.path().display());
-                    source_code += &std::fs::read_to_string(&entry.path()).unwrap();
+                    source_code += &std::fs::read_to_string(entry.path()).unwrap();
                     break;
                 }
             }

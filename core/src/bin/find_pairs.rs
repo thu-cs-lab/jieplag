@@ -42,15 +42,8 @@ fn main() -> anyhow::Result<()> {
             }
         }
         if include {
-            match core::lang::tokenize(&path) {
+            match core::lang::tokenize(path) {
                 Ok(tokens) => {
-                    /*
-                    println!("{}:", path.display());
-                    for t in &tokens {
-                        print!("{}:{}:{:?} ", t.kind, t.line, t.spelling);
-                    }
-                    println!("");
-                    */
                     template_tokens.insert(relative_path.to_path_buf(), tokens);
                 }
                 Err(err) => {
@@ -83,7 +76,7 @@ fn main() -> anyhow::Result<()> {
                 }
             }
             if include {
-                match core::lang::tokenize(&path) {
+                match core::lang::tokenize(path) {
                     Ok(tokens) => {
                         all_tokens
                             .entry(relative_path.to_path_buf())

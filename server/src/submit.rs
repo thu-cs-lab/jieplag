@@ -114,15 +114,13 @@ pub async fn submit(
         } else {
             return Ok(HttpResponse::Ok().json(false));
         }
+    } else if let Some(id) = session.get::<i32>("id")? {
+        user_id = id;
     } else {
-        if let Some(id) = session.get::<i32>("id")? {
-            user_id = id;
-        } else {
-            return Ok(HttpResponse::Ok().json(false));
-        }
+        return Ok(HttpResponse::Ok().json(false));
     }
     info!("Got submission from {}", user_id);
     let slug = work(conn, (*body).clone(), user_id).await.map_err(err)?;
     let url = format!("{}/results/{}/", ENV.public_url, slug);
-    return Ok(HttpResponse::Ok().json(url));
+    Ok(HttpResponse::Ok().json(url))
 }

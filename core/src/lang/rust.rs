@@ -49,7 +49,7 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
             TokenTree::Ident(ident) => {
                 // kind: [4, 4+keywords.len()]
                 let spelling = format!("{}", ident);
-                if let Some(i) = keywords.iter().position(|s| s == &&spelling) {
+                if let Some(i) = keywords.iter().position(|s| s == &spelling) {
                     res.push(Token {
                         spelling: format!("{}", ident),
                         kind: 5 + i as u8,
@@ -87,7 +87,7 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
 }
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    Ok(tokenize_str(&std::fs::read_to_string(path)?)?)
+    tokenize_str(&std::fs::read_to_string(path)?)
 }
 
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {

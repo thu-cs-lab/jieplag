@@ -17,22 +17,22 @@ pub fn compute_matches_from_token(
     let initial_search_length = 40;
     let minimum_match_length = 20;
     let mut matches = rkr_gst::run(
-        &token_kind_left,
-        &token_kind_right,
+        token_kind_left,
+        token_kind_right,
         initial_search_length,
         minimum_match_length,
     );
 
     if let Some(token_kind_template) = template_kind {
         let left_template_matches = rkr_gst::run(
-            &token_kind_left,
-            &token_kind_template,
+            token_kind_left,
+            token_kind_template,
             initial_search_length,
             minimum_match_length,
         );
         let right_template_matches = rkr_gst::run(
-            &token_kind_right,
-            &token_kind_template,
+            token_kind_right,
+            token_kind_template,
             initial_search_length,
             minimum_match_length,
         );
@@ -45,7 +45,7 @@ pub fn compute_matches_from_token(
 
                 let mut new_matches = vec![];
                 for m in matches.iter() {
-                    let mut m = m.clone();
+                    let mut m = *m;
                     let m_from = if left { m.pattern_index } else { m.text_index };
                     let m_to = m_from + m.length - 1;
 
@@ -140,7 +140,7 @@ pub fn compute_matching_blocks_from_text(
     let token_kind_left: Vec<u8> = token_left.iter().map(|t| t.kind).collect();
     let lines_left: Vec<&str> = left.lines().collect();
 
-    let token_right = crate::lang::tokenize_str(&right, language).unwrap();
+    let token_right = crate::lang::tokenize_str(right, language).unwrap();
     let token_kind_right: Vec<u8> = token_right.iter().map(|t| t.kind).collect();
     let lines_right: Vec<&str> = right.lines().collect();
 

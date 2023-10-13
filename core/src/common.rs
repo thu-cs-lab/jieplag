@@ -39,7 +39,7 @@ pub fn find_matches(left: &[Token], right: &[Token]) -> Vec<LineMatch> {
             line_matches[i].right_to = line_matches[i + 1].right_to;
             line_matches.drain(i + 1..i + 2);
         } else {
-            i = i + 1;
+            i += 1;
         }
     }
     line_matches
@@ -80,7 +80,7 @@ where
 
     let mut min_hash_index = 0;
     let mut window_offset = 0;
-    while let Some(e) = iter.next() {
+    for e in iter {
         // alder32 is not random enough!
         let mut h = std::collections::hash_map::DefaultHasher::new();
         hasher.hash().hash(&mut h);
@@ -143,7 +143,7 @@ where
     }
 
     let mut window_offset = 0;
-    while let Some(e) = iter.next() {
+    for e in iter {
         // alder32 is not random enough!
         let mut h = std::collections::hash_map::DefaultHasher::new();
         hasher.hash().hash(&mut h);

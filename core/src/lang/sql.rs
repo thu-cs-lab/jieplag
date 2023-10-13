@@ -3,13 +3,13 @@ use sqlparser::{dialect::GenericDialect, tokenizer::Token::*, tokenizer::Tokeniz
 use std::path::Path;
 
 pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
-    Ok(tokenize_str(&std::fs::read_to_string(path)?)?)
+    tokenize_str(&std::fs::read_to_string(path)?)
 }
 
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
     let dialect = GenericDialect {};
     let mut res = vec![];
-    for token in Tokenizer::new(&dialect, &content).tokenize_with_location()? {
+    for token in Tokenizer::new(&dialect, content).tokenize_with_location()? {
         let kind = match token.token {
             EOF => continue,
             Word(_) => 1,
@@ -82,7 +82,7 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             AtAt => 68,
         };
         res.push(Token {
-            kind: kind,
+            kind,
             spelling: token.to_string(),
             line: token.location.line as u32,
             column: token.location.column as u32,

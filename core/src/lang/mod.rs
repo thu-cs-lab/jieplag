@@ -6,8 +6,8 @@ use std::path::Path;
 pub mod cpp;
 pub mod python;
 pub mod rust;
-pub mod verilog;
 pub mod sql;
+pub mod verilog;
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum Language {

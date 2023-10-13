@@ -9,7 +9,6 @@ use actix_web::{
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
-use env_logger;
 use log::*;
 use ring::digest;
 
