@@ -14,7 +14,6 @@ regex = "1.10.0"
 rkr-gst = "0.1.2"
 tempfile = "3.8.0"
 walkdir = "2.4.0"
-structopt = "0.3.26"
 serde = { version = "1.0.189", features = ["derive"] }
 rustpython-parser = { version = "0.3.0", features = ["full-lexer"] }
 proc-macro2 = { version = "1.0.69", features = ["span-locations"] }
@@ -23,3 +22,4 @@ env_logger = "0.10.0"
 log = "0.4.20"
 adler32 = "1.2.0"
 html-escape = "0.2.13"
+clap = { version = "4.4.6", features = ["derive"] }

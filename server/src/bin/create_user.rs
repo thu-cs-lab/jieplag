@@ -1,23 +1,22 @@
+use api::env::ENV;
+use clap::Parser;
 use diesel::{Connection, RunQueryDsl};
 use dotenv::dotenv;
-use structopt::StructOpt;
 
-use api::env::ENV;
-
-#[derive(StructOpt)]
+#[derive(Parser)]
 struct Args {
-    #[structopt(short, long)]
+    #[arg(short, long)]
     user_name: String,
 
-    #[structopt(short, long)]
+    #[arg(short, long)]
     password: String,
 
-    #[structopt(short, long)]
+    #[arg(short, long)]
     force: bool,
 }
 
 fn main() -> anyhow::Result<()> {
-    let args = Args::from_args();
+    let args = Args::parse();
     dotenv().ok();
     let url = ENV.database_url.clone();
     let mut conn = server::db::DbConnection::establish(&url)?;

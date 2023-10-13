@@ -27,6 +27,6 @@ reqwest = { version = "0.11.22", features = ["blocking", "json"] }
 ring = "0.17.3"
 uuid = { version = "1.4.1", features = ["v4"] }
 clang = "2.0.0"
-structopt = "0.3.26"
 env_logger = "0.10.0"
 dotenv = "0.15.0"
+clap = { version = "4.4.6", features = ["derive"] }

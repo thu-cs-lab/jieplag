@@ -1,3 +1,4 @@
+use clap::Parser;
 use core::{
     common::{all_fingerprint, fingerprint, Fingerprint},
     token::Token,
@@ -5,26 +6,25 @@ use core::{
 use log::*;
 use regex::Regex;
 use std::{collections::HashMap, fs::read_dir, path::PathBuf};
-use structopt::StructOpt;
 use walkdir::WalkDir;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 struct Args {
     /// Path to source directory
-    #[structopt(short, long)]
+    #[arg(short, long)]
     source_directory: PathBuf,
 
     /// Path to template directory
-    #[structopt(short = "T", long)]
+    #[arg(short = 'T', long)]
     template_directory: PathBuf,
 
     /// Regex patterns for files to include
-    #[structopt(short, long)]
+    #[arg(short, long)]
     include: Vec<Regex>,
 }
 
 fn main() -> anyhow::Result<()> {
-    let opts = Args::from_args();
+    let opts = Args::parse();
     env_logger::init();
 
     // walk template directory

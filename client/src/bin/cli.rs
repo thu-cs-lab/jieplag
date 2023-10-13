@@ -2,28 +2,28 @@ use api::{
     def::{LoginRequest, Submission, SubmitRequest},
     env::ENV,
 };
+use clap::Parser;
 use core::lang::Language;
 use dotenv::dotenv;
-use std::{ffi::OsString, path::PathBuf, path::Path};
-use structopt::StructOpt;
+use std::{ffi::OsString, path::Path, path::PathBuf};
 use walkdir::WalkDir;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 struct Args {
     /// User name
-    #[structopt(short, long)]
+    #[arg(short, long)]
     user_name: String,
 
     /// Password
-    #[structopt(short, long)]
+    #[arg(short, long)]
     password: String,
 
     /// Language
-    #[structopt(short, long)]
+    #[arg(short, long)]
     language: String,
 
     /// Path to template file
-    #[structopt(short = "b", long)]
+    #[arg(short = 'b', long)]
     template: Option<PathBuf>,
 
     /// Paths to source code
@@ -43,7 +43,6 @@ fn collect(language: &Language, path: &Path) -> String {
         Language::Python => ["py"].to_vec(),
         Language::Verilog => ["v"].to_vec(),
     };
-
 
     if std::path::Path::new(path).is_file() {
         // one file
@@ -66,7 +65,7 @@ fn collect(language: &Language, path: &Path) -> String {
 
 fn main() -> anyhow::Result<()> {
     dotenv().ok();
-    let opts = Args::from_args();
+    let opts = Args::parse();
     env_logger::init();
 
     let language = match opts.language.as_str() {

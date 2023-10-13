@@ -1,3 +1,4 @@
+use clap::Parser;
 use core::{common::gen_svg, lang::tokenize, matching::compute_matches_from_token};
 use rkr_gst::Match;
 use std::{
@@ -5,20 +6,19 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
 };
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 struct Args {
     /// Path to left source
-    #[structopt(short, long)]
+    #[arg(short, long)]
     left: PathBuf,
 
     /// Path to right source
-    #[structopt(short, long)]
+    #[arg(short, long)]
     right: PathBuf,
 
     /// Path to template source
-    #[structopt(short, long)]
+    #[arg(short, long)]
     template: Option<PathBuf>,
 }
 
@@ -30,7 +30,7 @@ fn read_file_lines(s: &Path) -> anyhow::Result<Vec<String>> {
 }
 
 fn main() -> anyhow::Result<()> {
-    let opts = Args::from_args();
+    let opts = Args::parse();
     env_logger::init();
 
     let token_left = core::lang::tokenize(&opts.left).unwrap();
