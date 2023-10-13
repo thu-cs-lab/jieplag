@@ -14,9 +14,9 @@ pub async fn render_match_frame(
 ) -> Result<HttpResponse> {
     let (slug, match_id, frame) = path.into_inner();
     let (is_top, is_left) = match frame.as_str() {
-        "left" => (false, true),
-        "right" => (false, false),
-        "top" => (true, false),
+        "left" | "left.html" => (false, true),
+        "right" | "right.html" => (false, false),
+        "top" | "top.html" => (true, false),
         _ => {
             return Ok(HttpResponse::NotFound().json(false));
         }
@@ -76,14 +76,14 @@ pub async fn render_match_frame(
         for (idx, block) in blocks.iter() {
             res += "<tr>";
             res += &format!(
-                "<td><a href=\"./left#{}\" target=\"left\">{}-{}</td>",
+                "<td><a href=\"./left.html#{}\" target=\"left\">{}-{}</td>",
                 block.left_line_from, block.left_line_from, block.left_line_to
             );
             let left_ratio =
                 (block.left_line_to - block.left_line_from + 1) * 100 / left_lines as i32;
             res += &format!("<td>{}</td>", gen_svg(colors[idx % 5], left_ratio));
             res += &format!(
-                "<td><a href=\"./right#{}\" target=\"right\">{}-{}</td>",
+                "<td><a href=\"./right.html#{}\" target=\"right\">{}-{}</td>",
                 block.right_line_from, block.right_line_from, block.right_line_to
             );
             let right_ratio =
@@ -155,7 +155,7 @@ pub async fn render_match_frame(
             res += &format!("<a name=\"{}\">", line_from);
             res += &format!("<font color=\"{}\">", colors[idx % 5]);
             res += &format!(
-                "<a href=\"{}#{}\" target=\"{}\">",
+                "<a href=\"{}.html#{}\" target=\"{}\">",
                 opposite_side, opposite_line_from, opposite_side
             );
             res += &gen_svg(colors[idx % 5], 1);
@@ -190,11 +190,11 @@ pub async fn render_match(_path: web::Path<(String, i64)>) -> Result<HttpRespons
 	</head>
     <frameset rows="150,*">
         <frameset cols="1000,*">
-            <frame src="./top" name="top" frameborder="0"></frame>
+            <frame src="./top.html" name="top" frameborder="0"></frame>
         </frameset>
         <frameset cols="50%,50%">
-            <frame src="./left" name="left"></frame>
-            <frame src="./right" name="right"></frame>
+            <frame src="./left.html" name="left"></frame>
+            <frame src="./right.html" name="right"></frame>
         </frameset>
     </frameset>
 </html>
