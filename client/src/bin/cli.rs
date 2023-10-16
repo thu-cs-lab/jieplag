@@ -82,10 +82,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     let client = reqwest::blocking::Client::new();
-    let template = match &opts.template {
-        Some(template) => Some(collect(&language, template)),
-        None => None,
-    };
+    let template = opts.template.as_ref().map(|template| collect(&language, template));
     let body = client
         .post(format!("{}/api/submit", ENV.public_url))
         .json(&SubmitRequest {

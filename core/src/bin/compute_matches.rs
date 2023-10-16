@@ -26,7 +26,7 @@ fn read_file_lines(s: &Path) -> anyhow::Result<Vec<String>> {
     let mut file = File::open(s)?;
     let mut s = String::new();
     file.read_to_string(&mut s)?;
-    Ok(s.lines().map(|l| String::from(l)).collect::<Vec<String>>())
+    Ok(s.lines().map(String::from).collect::<Vec<String>>())
 }
 
 fn main() -> anyhow::Result<()> {
@@ -56,7 +56,7 @@ fn main() -> anyhow::Result<()> {
             .iter()
             .map(|l| l.as_str())
             .collect::<Vec<&str>>(),
-        template_kind.as_ref().map(|v| v.as_slice()),
+        template_kind.as_deref(),
     );
 
     for is_left in [true, false] {

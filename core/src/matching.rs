@@ -156,7 +156,7 @@ pub fn compute_matching_blocks_from_text(
         &token_right,
         &token_kind_right,
         &lines_right,
-        template_kind.as_ref().map(|v| v.as_slice()),
+        template_kind.as_deref(),
     );
 
     let mut res = vec![];
