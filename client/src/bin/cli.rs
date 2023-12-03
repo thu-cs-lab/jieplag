@@ -32,6 +32,32 @@ struct Args {
     code: Vec<PathBuf>,
 }
 
+fn read_file(path: &Path) -> String {
+    let content = std::fs::read(path).unwrap();
+    match String::from_utf8(content.clone()) {
+        Ok(content) => {
+            return content;
+        }
+        Err(err) => {
+            warn!(
+                "Failed to parse utf8 for {}: {}, trying to decoding as GB18030",
+                path.display(),
+                err
+            );
+
+            match encoding::all::GB18030.decode(&content, DecoderTrap::Strict) {
+                Ok(content) => {
+                    info!("Succeeded to parse gb18030 for {}: {}", path.display(), err);
+                    return content;
+                }
+                Err(err) => {
+                    panic!("Failed to parse gb18030 for {}: {}", path.display(), err);
+                }
+            }
+        }
+    }
+}
+
 fn collect(language: &Language, path: &Path) -> String {
     let comment = match &language {
         Language::Cpp => "//",
@@ -54,7 +80,7 @@ fn collect(language: &Language, path: &Path) -> String {
 
     if std::path::Path::new(path).is_file() {
         // one file
-        std::fs::read_to_string(path).unwrap()
+        read_file(path)
     } else {
         // find all sources and concat
         let mut source_code = String::new();
@@ -62,37 +88,8 @@ fn collect(language: &Language, path: &Path) -> String {
             for ext in &extensions {
                 if entry.path().extension() == Some(&OsString::from(ext)) {
                     source_code += &format!("{} {} \n", comment, entry.path().display());
-                    let content = std::fs::read(entry.path()).unwrap();
-                    match String::from_utf8(content.clone()) {
-                        Ok(content) => {
-                            source_code += &content;
-                        }
-                        Err(err) => {
-                            warn!(
-                                "Failed to parse utf8 for {}: {}, trying to decoding as GB18030",
-                                entry.path().display(),
-                                err
-                            );
-
-                            match encoding::all::GB18030.decode(&content, DecoderTrap::Strict) {
-                                Ok(content) => {
-                                    source_code += &content;
-                                    info!(
-                                        "Succeeded to parse gb18030 for {}: {}",
-                                        entry.path().display(),
-                                        err
-                                    );
-                                }
-                                Err(err) => {
-                                    warn!(
-                                        "Failed to parse gb18030 for {}: {}",
-                                        entry.path().display(),
-                                        err
-                                    );
-                                }
-                            }
-                        }
-                    }
+                    source_code += &read_file(entry.path());
+                    source_code += "\n";
                     break;
                 }
             }
