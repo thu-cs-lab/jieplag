@@ -106,8 +106,8 @@ fn main() -> anyhow::Result<()> {
         let mut local_tokens = vec![];
         let mut local_fingerprints = vec![];
         let mut index: HashMap<u64, Vec<(Fingerprint, usize)>> = HashMap::new();
-        for i in 0..keys.len() {
-            let token = all_tokens[submission][keys[i]].clone();
+        for (i, key) in keys.iter().enumerate() {
+            let token = all_tokens[submission][*key].clone();
             let fingerprint = fingerprint(token.iter().map(|t| t.kind), 40, 80);
             info!(
                 "{}: {} tokens, {} fingerprints",

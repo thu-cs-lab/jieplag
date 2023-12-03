@@ -79,8 +79,7 @@ where
     }
 
     let mut min_hash_index = 0;
-    let mut window_offset = 0;
-    for e in iter {
+    for (window_offset, e) in iter.enumerate() {
         // alder32 is not random enough!
         let mut h = std::collections::hash_map::DefaultHasher::new();
         hasher.hash().hash(&mut h);
@@ -119,7 +118,6 @@ where
         hasher.remove(noise, items.pop_front().unwrap());
         items.push_back(e);
         hasher.update(e);
-        window_offset += 1;
     }
     res
 }
@@ -142,8 +140,7 @@ where
         }
     }
 
-    let mut window_offset = 0;
-    for e in iter {
+    for (window_offset, e) in iter.enumerate() {
         // alder32 is not random enough!
         let mut h = std::collections::hash_map::DefaultHasher::new();
         hasher.hash().hash(&mut h);
@@ -158,7 +155,6 @@ where
         hasher.remove(noise, items.pop_front().unwrap());
         items.push_back(e);
         hasher.update(e);
-        window_offset += 1;
     }
     res
 }
