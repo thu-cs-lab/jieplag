@@ -87,6 +87,8 @@ async fn work(
                 .values(new_blocks)
                 .execute(conn)?;
         }
+        info!("Submission complete at {}", slug);
+
         Ok(slug)
     })?;
     Ok(slug)
