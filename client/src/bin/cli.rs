@@ -5,6 +5,8 @@ use api::{
 use clap::Parser;
 use core::lang::Language;
 use dotenv::dotenv;
+use encoding::{DecoderTrap, Encoding};
+use log::{info, warn};
 use std::{ffi::OsString, path::Path, path::PathBuf};
 use walkdir::WalkDir;
 
@@ -60,7 +62,37 @@ fn collect(language: &Language, path: &Path) -> String {
             for ext in &extensions {
                 if entry.path().extension() == Some(&OsString::from(ext)) {
                     source_code += &format!("{} {} \n", comment, entry.path().display());
-                    source_code += &std::fs::read_to_string(entry.path()).unwrap();
+                    let content = std::fs::read(entry.path()).unwrap();
+                    match String::from_utf8(content.clone()) {
+                        Ok(content) => {
+                            source_code += &content;
+                        }
+                        Err(err) => {
+                            warn!(
+                                "Failed to parse utf8 for {}: {}, trying to decoding as GB18030",
+                                entry.path().display(),
+                                err
+                            );
+
+                            match encoding::all::GB18030.decode(&content, DecoderTrap::Strict) {
+                                Ok(content) => {
+                                    source_code += &content;
+                                    info!(
+                                        "Succeeded to parse gb18030 for {}: {}",
+                                        entry.path().display(),
+                                        err
+                                    );
+                                }
+                                Err(err) => {
+                                    warn!(
+                                        "Failed to parse gb18030 for {}: {}",
+                                        entry.path().display(),
+                                        err
+                                    );
+                                }
+                            }
+                        }
+                    }
                     break;
                 }
             }
@@ -82,7 +114,10 @@ fn main() -> anyhow::Result<()> {
     };
 
     let client = reqwest::blocking::Client::new();
-    let template = opts.template.as_ref().map(|template| collect(&language, template));
+    let template = opts
+        .template
+        .as_ref()
+        .map(|template| collect(&language, template));
     let body = client
         .post(format!("{}/api/submit", ENV.public_url))
         .json(&SubmitRequest {

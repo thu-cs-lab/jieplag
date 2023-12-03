@@ -16,3 +16,5 @@ env_logger = "0.10.0"
 dotenv = "0.15.0"
 walkdir = "2.4.0"
 clap = { version = "4.4.6", features = ["derive"] }
+encoding = "0.2.33"
+log = "0.4.20"
