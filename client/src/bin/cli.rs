@@ -7,6 +7,7 @@ use core::lang::Language;
 use dotenv::dotenv;
 use encoding::{DecoderTrap, Encoding};
 use log::{info, warn};
+use regex::Regex;
 use std::{ffi::OsString, path::Path, path::PathBuf};
 use walkdir::WalkDir;
 
@@ -27,6 +28,10 @@ struct Args {
     /// Path to template file
     #[arg(short = 'b', long)]
     template: Option<PathBuf>,
+
+    /// Regex to filter file name when paths are directories
+    #[arg(short = 'r', long)]
+    regex: Option<Regex>,
 
     /// Paths to source code
     code: Vec<PathBuf>,
@@ -58,7 +63,7 @@ fn read_file(path: &Path) -> String {
     }
 }
 
-fn collect(language: &Language, path: &Path) -> String {
+fn collect(language: &Language, path: &Path, regex: &Option<Regex>) -> String {
     let comment = match &language {
         Language::Cpp => "//",
         Language::Rust => "//",
@@ -87,6 +92,11 @@ fn collect(language: &Language, path: &Path) -> String {
         for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
             for ext in &extensions {
                 if entry.path().extension() == Some(&OsString::from(ext)) {
+                    if let Some(regex) = regex {
+                        if !regex.is_match(&format!("{}", entry.path().display())) {
+                            continue;
+                        }
+                    }
                     source_code += &format!("{} {} \n", comment, entry.path().display());
                     source_code += &read_file(entry.path());
                     source_code += "\n";
@@ -114,7 +124,7 @@ fn main() -> anyhow::Result<()> {
     let template = opts
         .template
         .as_ref()
-        .map(|template| collect(&language, template));
+        .map(|template| collect(&language, template, &opts.regex));
     let body = client
         .post(format!("{}/api/submit", ENV.public_url))
         .json(&SubmitRequest {
@@ -129,7 +139,7 @@ fn main() -> anyhow::Result<()> {
                 .iter()
                 .map(|code| Submission {
                     name: format!("{}", code.display()),
-                    code: collect(&language, code),
+                    code: collect(&language, code, &opts.regex),
                 })
                 .collect::<Vec<_>>(),
         })

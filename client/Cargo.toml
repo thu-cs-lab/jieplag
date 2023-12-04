@@ -18,3 +18,4 @@ walkdir = "2.4.0"
 clap = { version = "4.4.6", features = ["derive"] }
 encoding = "0.2.33"
 log = "0.4.20"
+regex = "1.10.2"
