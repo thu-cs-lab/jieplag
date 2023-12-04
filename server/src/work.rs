@@ -101,7 +101,7 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
     // collect highest matches
     let mut sorted_m: Vec<_> = m.iter().enumerate().collect();
     sorted_m.sort_by_key(|(_, val)| **val);
-    for (i, num_matches) in sorted_m.iter().rev().take(100) {
+    for (i, num_matches) in sorted_m.iter().rev().take(200) {
         let left = i % all_tokens.len();
         let right = i / all_tokens.len();
         if left <= right {
