@@ -31,8 +31,8 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
                 kind: _,
                 triple_quoted: _,
             } => 4,
-            // skip newline
-            Comment(_) => 5,
+            // skip newline or comments
+            Comment(_) => continue,
             Newline => continue, // 6
             Indent => 7,
             Dedent => 8,
