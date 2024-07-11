@@ -34,8 +34,11 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             // skip newline or comments
             Comment(_) => continue,
             Newline => continue, // 6
-            Indent => 7,
-            Dedent => 8,
+            // skip indentation
+            Indent => continue,
+            Dedent => continue,
+            // Indent => 7,
+            // Dedent => 8,
             StartModule => 9,
             StartInteractive => 10,
             StartExpression => 11,
