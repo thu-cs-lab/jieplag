@@ -1,3 +1,4 @@
+use anyhow::Context;
 use api::def::SubmitRequest;
 use core::{
     common::{all_fingerprint, fingerprint, Fingerprint},
@@ -33,7 +34,10 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
     // tokenize sources
     let mut all_tokens = vec![];
     for submission in &req.submissions {
-        all_tokens.push(tokenize_str(&submission.code, req.language)?);
+        all_tokens.push(
+            tokenize_str(&submission.code, req.language)
+                .with_context(|| submission.name.clone())?,
+        );
     }
     info!("Tokenized {} files in submission", all_tokens.len());
 

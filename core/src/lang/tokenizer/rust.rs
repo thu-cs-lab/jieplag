@@ -96,7 +96,8 @@ fn flatten(token_stream: TokenStream) -> Vec<Token> {
 }
 
 pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
-    let token_stream = TokenStream::from_str(content).map_err(|err| anyhow!("{}", err))?;
+    let token_stream = TokenStream::from_str(content)
+        .map_err(|err| anyhow!("Failed to parse source: {} {:?}", err, err,))?;
     Ok(flatten(token_stream))
 }
 
