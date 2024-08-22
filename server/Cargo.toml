@@ -30,3 +30,4 @@ clang = "2.0.0"
 env_logger = "0.10.0"
 dotenv = "0.15.0"
 clap = { version = "4.4.6", features = ["derive"] }
+rayon = "1.10.0"

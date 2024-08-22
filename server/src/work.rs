@@ -5,6 +5,7 @@ use core::{
     lang::tokenize_str,
     matching::{compute_matching_blocks_from_text, Block},
 };
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
 use log::*;
 use std::collections::HashMap;
@@ -100,49 +101,62 @@ pub fn work_blocking(req: SubmitRequest) -> anyhow::Result<WorkResult> {
         }
     }
 
-    let mut matches = vec![];
-
     // collect highest matches
     let mut sorted_m: Vec<_> = m.iter().enumerate().collect();
     sorted_m.sort_by_key(|(_, val)| **val);
-    for (i, num_matches) in sorted_m.iter().rev().take(200) {
-        let left = i % all_tokens.len();
-        let right = i / all_tokens.len();
-        if left <= right {
-            // skip duplicate
-            continue;
-        }
-        let num_matches = **num_matches;
-        // show debug message
-        debug!(
-            "Possible plagarism: {} and {}: {} matches",
-            req.submissions[left].name, req.submissions[right].name, num_matches,
-        );
+    let matches_res: Vec<anyhow::Result<Match>> = sorted_m
+        .par_iter()
+        .rev()
+        .take(200)
+        .filter_map(|(i, num_matches)| {
+            let left = i % all_tokens.len();
+            let right = i / all_tokens.len();
+            if left <= right {
+                // skip duplicate
+                return None;
+            }
+            let num_matches = **num_matches;
+            // show debug message
+            debug!(
+                "Possible plagarism: {} and {}: {} matches",
+                req.submissions[left].name, req.submissions[right].name, num_matches,
+            );
 
-        let blocks = compute_matching_blocks_from_text(
-            &req.submissions[left].code,
-            &req.submissions[right].code,
-            req.language,
-            &req.template,
-        )?;
+            let blocks = match compute_matching_blocks_from_text(
+                &req.submissions[left].code,
+                &req.submissions[right].code,
+                req.language,
+                &req.template,
+            ) {
+                Ok(blocks) => blocks,
+                Err(err) => {
+                    return Some(Err(err));
+                }
+            };
 
-        let mut left_matched_lines = 0;
-        let mut right_matched_lines = 0;
-        for block in &blocks {
-            left_matched_lines += block.left_line_to - block.left_line_from + 1;
-            right_matched_lines += block.right_line_to - block.right_line_from + 1;
-        }
-        let left_lines = req.submissions[left].code.lines().count();
-        let right_lines = req.submissions[right].code.lines().count();
+            let mut left_matched_lines = 0;
+            let mut right_matched_lines = 0;
+            for block in &blocks {
+                left_matched_lines += block.left_line_to - block.left_line_from + 1;
+                right_matched_lines += block.right_line_to - block.right_line_from + 1;
+            }
+            let left_lines = req.submissions[left].code.lines().count();
+            let right_lines = req.submissions[right].code.lines().count();
 
-        matches.push(Match {
-            left_submission_idx: left,
-            left_match_rate: (left_matched_lines * 100 / left_lines) as i32,
-            right_submission_idx: right,
-            right_match_rate: (right_matched_lines * 100 / right_lines) as i32,
-            lines_matched: left_matched_lines + right_matched_lines,
-            blocks,
+            Some(Ok(Match {
+                left_submission_idx: left,
+                left_match_rate: (left_matched_lines * 100 / left_lines) as i32,
+                right_submission_idx: right,
+                right_match_rate: (right_matched_lines * 100 / right_lines) as i32,
+                lines_matched: left_matched_lines + right_matched_lines,
+                blocks,
+            }))
         })
+        .collect();
+
+    let mut matches = vec![];
+    for m in matches_res {
+        matches.push(m?);
     }
 
     matches.sort_by_key(|m| m.lines_matched);
