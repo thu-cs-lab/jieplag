@@ -106,7 +106,7 @@ pub async fn render_match_frame(
             .map_err(err)?;
         let lines: Vec<&str> = s.code.lines().collect();
 
-        res = "<html><head><meta charset=\"UTF-8\"></head><body><pre>".to_string();
+        res = "<html><head><meta charset=\"UTF-8\"></head><body><pre style=\"font-family: JetBrains Mono, Cascadia Code, Fira Code, Inconsolata, Iosevka, Monaco, Menlo, Roboto Mono, Source Code Pro, Ubuntu Mono, Consolas, monospace\">".to_string();
         let mut last_line = 0;
 
         // add index to blocks before sorting
