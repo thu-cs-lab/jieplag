@@ -5,8 +5,14 @@ use clang::token::TokenKind;
 use std::{
     hash::{Hash, Hasher},
     path::Path,
+    sync::Mutex
 };
 use tempfile::tempdir;
+use once_cell::sync::Lazy;
+
+static CLANG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| {
+    Mutex::new(())
+});
 
 pub struct Cpp;
 
@@ -21,6 +27,8 @@ impl Tokenize for Cpp {
 }
 
 fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
+    // clang-rs only allows single thread usage
+    let _guard = CLANG_LOCK.lock().unwrap();
     let clang = clang::Clang::new().map_err(|err| anyhow!("{}", err))?;
     let index = clang::Index::new(&clang, true, false);
     let tu = index.parser(path).parse()?;
