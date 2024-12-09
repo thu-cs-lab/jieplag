@@ -831,7 +831,6 @@ dependencies = [
  "adler32",
  "anyhow",
  "bitvec",
- "boa_ast",
  "boa_interner",
  "boa_parser",
  "clang",

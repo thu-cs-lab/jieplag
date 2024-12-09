@@ -5,27 +5,48 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["all_langs"]
+
+cpp = ["dep:clang"]
+javascript = ["dep:boa_parser", "dep:boa_interner"]
+lua = ["dep:full_moon"]
+python = ["dep:rustpython-parser"]
+rust = ["dep:proc-macro2"]
+sql = ["dep:sqlparser"]
+verilog = ["dep:verilog-lang"]
+
+all_langs = ["cpp", "javascript", "lua", "python", "rust", "sql", "verilog"]
+
+
 [dependencies]
 
 anyhow = "1.0.75"
+once_cell = "1.20.2"
 bitvec = "1.0.1"
-clang = "2.0.0"
 regex = "1.10.0"
 rkr-gst = "0.1.2"
 tempfile = "3.8.0"
 walkdir = "2.4.0"
 serde = { version = "1.0.189", features = ["derive"] }
-rustpython-parser = { version = "0.3.0", features = ["full-lexer"] }
-proc-macro2 = { version = "1.0.69", features = ["span-locations"] }
-verilog-lang = { git = "https://github.com/jiegec/verilog-lang" }
 env_logger = "0.10.0"
 log = "0.4.20"
 adler32 = "1.2.0"
 html-escape = "0.2.13"
 clap = { version = "4.4.6", features = ["derive"] }
-sqlparser = "0.38.0"
-boa_parser = "0.17.3"
-boa_interner = "0.17.3"
-boa_ast = "0.17.3"
-full_moon = "0.18.1"
-once_cell = "1.20.2"
+
+# Cpp
+clang = { version = "2.0.0", optional = true }
+# JavaScript
+boa_parser = { version = "0.17.3", optional = true }
+boa_interner = { version = "0.17.3", optional = true }
+# Lua
+full_moon = { version = "0.18.1", optional = true }
+# Python
+rustpython-parser = { version = "0.3.0", features = ["full-lexer"], optional = true }
+# Rust
+proc-macro2 = { version = "1.0.69", features = ["span-locations"], optional = true }
+# SQL
+sqlparser = { version = "0.38.0", optional = true }
+# Verilog
+verilog-lang = { git = "https://github.com/jiegec/verilog-lang", optional = true }
