@@ -158,4 +158,4 @@ cargo run --bin cli -- --language cc --user-name USER_NAME_HERE --password PASSW
 
 JiePlag is highly influenced by Stanford MOSS. Due to frequent outage of Stanford MOSS, we created JiePlag as a open source software clone. We re-implemented [winnow](https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf) algorithm and mimicked the web interface of Stanford MOSS.
 
-We highly thanked Stanford MOSS for their great contributions to the teaching comunity.
+We highly thanked Stanford MOSS for their great contributions to the teaching community.
