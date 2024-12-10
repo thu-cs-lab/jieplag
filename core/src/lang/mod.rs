@@ -31,36 +31,43 @@ struct LangInfo {
 
 fn get_lang_info() -> Vec<LangInfo> {
     vec![
+        #[cfg(feature = "cpp")]
         LangInfo {
             name: Language::Cpp,
             extensions: vec!["cpp", "cc", "cxx", "c++", "c", "cu"],
             tokenizer: Box::new(tokenizer::cpp::Cpp),
         },
+        #[cfg(feature = "rust")]
         LangInfo {
             name: Language::Rust,
             extensions: vec!["rs"],
             tokenizer: Box::new(tokenizer::rust::Rust),
         },
+        #[cfg(feature = "verilog")]
         LangInfo {
             name: Language::Verilog,
             extensions: vec!["v"],
             tokenizer: Box::new(tokenizer::verilog::Verilog),
         },
+        #[cfg(feature = "python")]
         LangInfo {
             name: Language::Python,
             extensions: vec!["py"],
             tokenizer: Box::new(tokenizer::python::Python),
         },
+        #[cfg(feature = "sql")]
         LangInfo {
             name: Language::SQL,
             extensions: vec!["sql"],
             tokenizer: Box::new(tokenizer::sql::SQL),
         },
+        #[cfg(feature = "javascript")]
         LangInfo {
             name: Language::JavaScript,
             extensions: vec!["js"],
             tokenizer: Box::new(tokenizer::javascript::JavaScript),
         },
+        #[cfg(feature = "lua")]
         LangInfo {
             name: Language::Lua,
             extensions: vec!["lua"],
@@ -81,7 +88,8 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
             return lang.tokenizer.tokenize(path);
         }
     }
-    Err(anyhow!("Unsupported file extension: {:?}", path))
+    Err(anyhow!("Unsupported file extension: {:?}. \
+    Did you enable a corresponding feature?", path))
 }
 
 pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Token>> {
@@ -90,5 +98,6 @@ pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Tok
             return lang.tokenizer.tokenize_str(content);
         }
     }
-    Err(anyhow!("Unsupported language: {:?}", language))
+    Err(anyhow!("Unsupported language: {:?}. \
+    Did you enable a corresponding feature?", language))
 }

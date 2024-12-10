@@ -97,6 +97,7 @@ fn main() -> anyhow::Result<()> {
         let keys: Vec<&PathBuf> = all_tokens[submission].keys().collect();
 
         if !template_tokens.contains_key(submission) {
+            warn!("No template found for {}!", submission.display());
             continue;
         }
 
