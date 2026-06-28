@@ -88,8 +88,11 @@ pub fn tokenize(path: &Path) -> anyhow::Result<Vec<Token>> {
             return lang.tokenizer.tokenize(path);
         }
     }
-    Err(anyhow!("Unsupported file extension: {:?}. \
-    Did you enable a corresponding feature?", path))
+    Err(anyhow!(
+        "Unsupported file extension: {:?}. \
+    Did you enable a corresponding feature?",
+        path
+    ))
 }
 
 pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Token>> {
@@ -98,6 +101,9 @@ pub fn tokenize_str(content: &str, language: Language) -> anyhow::Result<Vec<Tok
             return lang.tokenizer.tokenize_str(content);
         }
     }
-    Err(anyhow!("Unsupported language: {:?}. \
-    Did you enable a corresponding feature?", language))
+    Err(anyhow!(
+        "Unsupported language: {:?}. \
+    Did you enable a corresponding feature?",
+        language
+    ))
 }

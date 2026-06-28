@@ -4,8 +4,8 @@ use crate::{
     models::{Block, Job, Match, Submission},
 };
 use actix_web::{get, http::header, web, HttpResponse, Result};
-use core::common::gen_svg;
 use diesel::prelude::*;
+use jieplag_core::common::gen_svg;
 
 #[get("/results/{slug}/{match_id}/{frame}")]
 pub async fn render_match_frame(

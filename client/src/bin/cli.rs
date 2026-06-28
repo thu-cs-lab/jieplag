@@ -3,9 +3,9 @@ use api::{
     env::ENV,
 };
 use clap::Parser;
-use core::lang::Language;
 use dotenv::dotenv;
 use encoding::{DecoderTrap, Encoding};
+use jieplag_core::lang::Language;
 use log::{info, warn};
 use regex::Regex;
 use std::{ffi::OsString, path::Path, path::PathBuf};

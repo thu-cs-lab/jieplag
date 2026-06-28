@@ -1,5 +1,5 @@
 use clap::Parser;
-use core::{common::gen_svg, lang::tokenize, matching::compute_matches_from_token};
+use jieplag_core::{common::gen_svg, lang::tokenize, matching::compute_matches_from_token};
 use rkr_gst::Match;
 use std::{
     fs::File,
@@ -33,11 +33,12 @@ fn main() -> anyhow::Result<()> {
     let opts = Args::parse();
     env_logger::init();
 
-    let token_left = core::lang::tokenize(&opts.left).unwrap();
+    let token_left = jieplag_core::lang::tokenize(&opts.left).unwrap();
     let token_kind_left: Vec<u8> = token_left.iter().map(|t| t.kind).collect();
     let lines_left = read_file_lines(&opts.left)?;
 
-    let token_right: Vec<core::token::Token> = core::lang::tokenize(&opts.right).unwrap();
+    let token_right: Vec<jieplag_core::token::Token> =
+        jieplag_core::lang::tokenize(&opts.right).unwrap();
     let token_kind_right: Vec<u8> = token_right.iter().map(|t| t.kind).collect();
     let lines_right = read_file_lines(&opts.right)?;
 

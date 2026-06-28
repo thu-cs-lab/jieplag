@@ -1,5 +1,5 @@
 use clap::Parser;
-use core::{
+use jieplag_core::{
     common::{all_fingerprint, fingerprint, Fingerprint},
     token::Token,
 };
@@ -42,7 +42,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
         if include {
-            match core::lang::tokenize(path) {
+            match jieplag_core::lang::tokenize(path) {
                 Ok(tokens) => {
                     template_tokens.insert(relative_path.to_path_buf(), tokens);
                 }
@@ -76,7 +76,7 @@ fn main() -> anyhow::Result<()> {
                 }
             }
             if include {
-                match core::lang::tokenize(path) {
+                match jieplag_core::lang::tokenize(path) {
                     Ok(tokens) => {
                         all_tokens
                             .entry(relative_path.to_path_buf())

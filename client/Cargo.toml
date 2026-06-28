@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 
-core = { path = "../core" }
+jieplag_core = { path = "../core" }
 api = { path = "../api" }
 
 anyhow = "1.0.75"

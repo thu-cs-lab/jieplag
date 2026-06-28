@@ -1,6 +1,6 @@
 use anyhow::Context;
 use api::def::SubmitRequest;
-use core::{
+use jieplag_core::{
     common::{all_fingerprint, fingerprint, Fingerprint},
     lang::tokenize_str,
     matching::{compute_matching_blocks_from_text, Block},

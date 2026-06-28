@@ -1,4 +1,4 @@
-use core::lang::Language;
+use jieplag_core::lang::Language;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

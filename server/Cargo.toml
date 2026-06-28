@@ -8,7 +8,7 @@ edition = "2021"
 
 [dependencies]
 
-core = { path = "../core" }
+jieplag_core = { path = "../core" }
 api = { path = "../api" }
 
 actix = "0.13.1"
