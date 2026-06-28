@@ -119,6 +119,8 @@ pub fn tokenize_str(content: &str) -> anyhow::Result<Vec<Token>> {
             QuestionAnd => 99,
             QuestionPipe => 100,
             CustomBinaryOperator(_) => 101,
+            QuoteDelimitedStringLiteral(_) => 102,
+            NationalQuoteDelimitedStringLiteral(_) => 103,
         };
         res.push(Token {
             kind,

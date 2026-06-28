@@ -1,3 +1,4 @@
+use boa_ast::Spanned;
 use crate::lang::Tokenize;
 use crate::token::Token;
 use boa_interner::Interner;

@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 jieplag_core = { path = "../core" }
 
-lazy_static = "1.4.0"
-serde = { version = "1.0.144", features = ["derive"] }
+lazy_static = "1.5.0"
+serde = { version = "1.0.228", features = ["derive"] }
