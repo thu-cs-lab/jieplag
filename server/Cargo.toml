@@ -12,22 +12,22 @@ jieplag_core = { path = "../core" }
 api = { path = "../api" }
 
 actix = "0.13.5"
-actix-http = "3.13.1"
-actix-web = "4.14.0"
-actix-cors = "0.7.1"
-actix-rt = "2.11.0"
+actix-http = "3.19.0"
+actix-web = "4.17.0"
+actix-cors = "0.7.2"
+actix-rt = "2.15.0"
 actix-session = { version = "0.11.0", features = ["cookie-session"] }
-diesel = { version = "2.3.10", features = ["postgres", "r2d2", "chrono"] }
+diesel = { version = "2.3.14", features = ["postgres", "r2d2", "chrono"] }
 diesel_migrations = "2.3.2"
-log = "0.4.33"
-anyhow = "1.0.103"
-html-escape = "0.2.13"
-serde = { version = "1.0.228", features = ["derive"] }
-reqwest = { version = "0.13.4", features = ["blocking", "json"] }
+log = "0.4.34"
+anyhow = "1.0.104"
+html-escape = "0.3.0"
+serde = { version = "1.0.229", features = ["derive"] }
+reqwest = { version = "0.13.5", features = ["blocking", "json"] }
 ring = "0.17.14"
-uuid = { version = "1.23.4", features = ["v4"] }
-clang = "2.0.0"
+uuid = { version = "1.28.0", features = ["v4"] }
+clang = "2.1.0"
 env_logger = "0.11.11"
 dotenv = "0.15.0"
-clap = { version = "4.6.1", features = ["derive"] }
+clap = { version = "4.6.7", features = ["derive"] }
 rayon = "1.12.0"
